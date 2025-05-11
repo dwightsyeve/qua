@@ -501,7 +501,7 @@ async function sendAdminNotification(subject, data) {
         </div>
         <p style="color: #888; font-size: 0.9em;">This is an automated message. Please log in to the admin panel to take action.</p>
         <div style="margin-top: 20px; text-align: center;">
-          <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin.html" 
+          <a href="${process.env.FRONTEND_URL || 'https://qua-vagw.onrender.com'}/admin.html" 
              style="background-color: #3498db; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
             Go to Admin Panel
           </a>
