@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const bcrypt = require('bcrypt'); // Added bcrypt for password hashing
+const bcrypt = require('bcryptjs'); // Added bcrypt for password hashing
 const db = require('../database');
 
 class User {
