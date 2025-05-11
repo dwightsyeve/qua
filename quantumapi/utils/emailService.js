@@ -18,7 +18,7 @@ exports.sendVerificationEmail = async (email, token, name, customContent = null,
     throw new Error('Email address is required');
   }
   
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendUrl = process.env.FRONTEND_URL || 'https://qua-vagw.onrender.com';
   
   let subject = customSubject;
   let htmlContent;
