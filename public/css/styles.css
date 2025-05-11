@@ -1,0 +1,486 @@
+/* Define global CSS variables */
+:root {
+    --primary-dark: #1a1f4b;
+    --secondary-dark: #0a0f2a;
+    --accent-color: #4d80ff;
+    --accent-hover: #3a6de9;
+    --text-light: #ffffff;
+    --text-muted: #b8c2e8;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --success-color: #57ff9a;
+    --warning-color: #ffbd59;
+    --danger-color: #ff5757;
+    --box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    --transition: all 0.3s ease;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Updated font */
+    background-color: var(--secondary-dark); /* Use variable */
+    color: var(--text-light); /* Use variable */
+    margin: 0;
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Consistent font */
+    margin-bottom: 0.75rem;
+    color: var(--text-light);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Remove Tailwind @apply directives - Basic Styles */
+.btn-primary {
+    background-color: var(--accent-color);
+    color: var(--text-light);
+    font-weight: 500;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none; /* Added for links styled as buttons */
+    display: inline-block; /* Added for links styled as buttons */
+}
+.btn-primary:hover {
+    background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    font-weight: 500;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none; /* Added */
+    display: inline-block; /* Added */
+}
+.btn-secondary:hover {
+     background-color: rgba(255, 255, 255, 0.15);
+     color: var(--text-light);
+}
+
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(5px);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--box-shadow);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent;
+    margin-bottom: 1rem; /* Added spacing */
+}
+
+.table th, .table td {
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 15px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.table th {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert-success {
+    color: var(--success-color);
+    background-color: rgba(87, 255, 154, 0.1);
+    border-color: rgba(87, 255, 154, 0.3);
+}
+
+.alert-error, .alert-danger /* Added alias */ {
+    color: var(--danger-color);
+    background-color: rgba(255, 87, 87, 0.1);
+    border-color: rgba(255, 87, 87, 0.3);
+}
+
+.alert-warning {
+    color: var(--warning-color);
+    background-color: rgba(255, 189, 89, 0.1);
+    border-color: rgba(255, 189, 89, 0.3);
+}
+
+.alert-info {
+    color: var(--accent-color);
+    background-color: rgba(77, 128, 255, 0.1);
+    border-color: rgba(77, 128, 255, 0.3);
+}
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.navbar {
+    /* Basic navbar styles for non-admin pages */
+    background-color: var(--primary-dark);
+    color: var(--text-light);
+    padding: 1rem;
+    margin-bottom: 1rem; /* Added spacing */
+}
+
+.navbar a {
+    color: var(--text-light);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+}
+.navbar a:hover {
+    color: var(--accent-color);
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--text-light);
+    background-color: rgba(255, 255, 255, 0.05);
+    background-clip: padding-box;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    box-sizing: border-box; /* Ensure padding doesn't increase size */
+}
+
+.form-control:focus {
+    color: var(--text-light);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-color);
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(77, 128, 255, 0.25);
+}
+
+/* --- Styles below might be from previous attempts or specific pages --- */
+/* --- Review and integrate or remove as needed --- */
+
+/* Milestone Progress Bar Styles (Keep if used elsewhere) */
+.milestone-container {
+  position: relative;
+  margin: 20px 0;
+}
+
+#milestoneProgress {
+  transition: width 1s ease-in-out, background-color 0.5s ease;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Milestone Reward Button (Keep if used elsewhere) */
+#milestoneReward {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+#milestoneReward::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: rotate(45deg);
+  z-index: -1;
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+
+/* Confetti Animation (Keep if used elsewhere) */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: var(--accent-color); /* Updated to use defined variable */
+  animation: confetti-fall 3s linear infinite;
+}
+
+.confetti:nth-child(2n) {
+  background-color: var(--primary-dark); /* Example - adjust as needed */
+}
+
+.confetti:nth-child(3n) {
+  background-color: var(--warning-color);
+}
+
+.confetti:nth-child(4n) {
+  background-color: var(--success-color);
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Milestone Modal (Keep if used elsewhere) */
+#milestoneModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Darker overlay */
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.milestone-modal-content {
+  background-color: var(--primary-dark); /* Use theme color */
+  color: var(--text-light);
+  border-radius: 1rem;
+  padding: 2rem;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  position: relative;
+  box-shadow: var(--box-shadow);
+  border: 1px solid var(--border-color);
+  animation: modal-appear 0.3s ease-out;
+}
+
+@keyframes modal-appear {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.milestone-trophy {
+  font-size: 4rem;
+  color: #f59e0b; /* Keep gold color */
+  margin-bottom: 1rem;
+}
+
+/* Reward Animation (Keep if used elsewhere) */
+.reward-amount {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--success-color); /* Use theme color */
+  position: relative;
+  display: inline-block;
+}
+
+.reward-amount::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(87, 255, 154, 0.2) 0%, transparent 70%); /* Use theme color */
+  animation: reward-pulse 2s infinite;
+}
+
+@keyframes reward-pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1.1);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Progress bar label position markers (Keep if used elsewhere) */
+.milestone-label {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  color: var(--text-muted); /* Use theme color */
+}
+
+/* Creative progress bar (Keep if used elsewhere) */
+.milestone-creative-progress {
+  position: relative;
+  height: 10px;
+  overflow: visible;
+}
+
+.milestone-creative-progress::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background-color: #f59e0b; /* Keep gold color */
+  border-radius: 50%;
+  transform: translateX(50%);
+  animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateX(50%) translateY(-3px);
+  }
+  50% {
+    transform: translateX(50%) translateY(3px);
+  }
+}
+
+/* Notification system (Keep if used elsewhere, but toast is preferred for admin) */
+.notification-message {
+    /* Styles kept but might be redundant if admin uses toast */
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    min-width: 300px;
+    display: flex;
+    align-items: center;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+}
+/* ... rest of notification styles ... */
+
+/* Button loading state */
+button:disabled {
+    opacity: 0.6; /* Slightly adjusted opacity */
+    cursor: not-allowed;
+}
+
+/* Animations for notifications (Keep if used elsewhere) */
+.animate__animated {
+    animation-duration: 0.5s;
+}
+/* ... rest of animation styles ... */
+
+/* Basic Responsive adjustments for non-admin */
+@media (max-width: 768px) {
+    .container {
+        padding: 0.5rem;
+    }
+    .navbar {
+        padding: 0.5rem;
+    }
+    .navbar a {
+        padding: 0.5rem;
+    }
+    .card {
+        padding: 15px;
+    }
+    .table th, .table td {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+    .form-control {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+    .btn-primary, .btn-secondary {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+/* Add this to the <style> section in investment.html */
+.highlight-animation {
+  animation: highlight-pulse 1.5s ease;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+  50% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.3); }
+}

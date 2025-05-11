@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invest Now | QuantumFX</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #4f46e5;
+            --accent-color: #8b5cf6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+        
+        body {
+            background-color: #f8fafc;
+            font-family: 'Poppins', sans-serif;
+            color: #1f2937;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .main-content {
+            flex: 1;
+        }
+        
+        .plan-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: #cbd5e1;
+        }
+        
+        .plan-card.starter-plan {
+            background: linear-gradient(135deg, #ffffff, #f0f9ff);
+        }
+        
+        .plan-card.premium-plan {
+            background: linear-gradient(135deg, #ffffff, #f0fdfa);
+            border: 1px solid #10b981;
+        }
+        
+        .plan-card.vip-plan {
+            background: linear-gradient(135deg, #ffffff, #eff6ff);
+        }
+        
+        .plan-card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .plan-card-body {
+            padding: 1.5rem;
+        }
+        
+        .plan-card-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            background-color: rgba(249, 250, 251, 0.7);
+        }
+        
+        .plan-feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .plan-feature i {
+            color: #10b981;
+            margin-right: 0.75rem;
+        }
+        
+        .plan-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background-color: #dbeafe;
+            color: #1e40af;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .premium-badge {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .vip-badge {
+            background: linear-gradient(45deg, #6366f1, #4f46e5);
+            color: white;
+        }
+
+        .investment-form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        .calculation-preview {
+            background-color: #eef2ff;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .calculation-preview.premium {
+            background-color: #ecfdf5;
+        }
+        
+        .calculation-preview.vip {
+            background-color: #eef2ff;
+        }
+
+        .header-banner {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-banner">
+        <div class="container">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold">Invest Now</h1>
+                    <p class="opacity-80">Select a plan and start investing today</p>
+                </div>
+                <a href="investment.html" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-8 main-content">
+        <!-- Investment Plans Grid -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-semibold mb-6">Select an Investment Plan</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Starter Plan -->
+                <div class="plan-card starter-plan" id="starter-plan">
+                    <div class="plan-card-header">
+                        <span class="plan-badge">Starter</span>
+                        <h3 class="text-xl font-bold text-gray-800">Starter Plan</h3>
+                        <p class="text-gray-500 text-sm">Perfect for beginners</p>
+                    </div>
+                    <div class="plan-card-body">
+                        <div class="mb-4">
+                            <span class="text-3xl font-bold text-indigo-600">2.0%</span>
+                            <span class="text-gray-600">/ Daily ROI</span>
+                        </div>
+                        <div class="mb-6">
+                            <span class="bg-indigo-100 text-indigo-800 text-sm font-medium px-2.5 py-0.5 rounded">50-Day Program</span>
+                        </div>
+                        <ul class="mb-6 space-y-3">
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Min. Deposit: 50 USDT</span>
+                            </li>
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Max. Deposit: 1,000 USDT</span>
+                            </li>
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Total Return: 200%</span>
+                            </li>
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Capital Returned: Yes</span>
+                            </li>
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Instant Withdrawal</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="plan-card-footer">
+                        <button onclick="selectPlan('starter')" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition duration-200 flex items-center justify-center">
+                            <i class="fas fa-arrow-right mr-2"></i> Invest Now
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Premium Plan -->
+                <div class="plan-card premium-plan" id="premium-plan">
+                    <div class="plan-card-header">
+                        <span class="plan-badge premium-badge">Premium</span>
+                        <h3 class="text-xl font-bold text-gray-800">Premium Plan</h3>
+                        <p class="text-gray-500 text-sm">Most popular choice</p>
+                    </div>
+                    <div class="plan-card-body">
+                        <div class="mb-4">
+                            <span class="text-3xl font-bold text-green-600">2.5%</span>
+                            <span class="text-gray-600">/ Daily ROI</span>
+                        </div>
+                        <div class="mb-6">
+                            <span class="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded">40-Day Program</span>
+                        </div>
+                        <ul class="mb-6 space-y-3">
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Min. Deposit: 1,001 USDT</span>
+                            </li>
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Max. Deposit: 5,000 USDT</span>
+                            </li>
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Total Return: 200%</span>
+                            </li>
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Capital Returned: Yes</span>
+                            </li>
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Priority Support</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="plan-card-footer">
+                        <button onclick="selectPlan('premium')" class="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-200 flex items-center justify-center">
+                            <i class="fas fa-arrow-right mr-2"></i> Invest Now
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- VIP Plan -->
+                <div class="plan-card vip-plan" id="vip-plan">
+                    <div class="plan-card-header">
+                        <span class="plan-badge vip-badge">VIP</span>
+                        <h3 class="text-xl font-bold text-gray-800">VIP Plan</h3>
+                        <p class="text-gray-500 text-sm">For serious investors</p>
+                    </div>
+                    <div class="plan-card-body">
+                        <div class="mb-4">
+                            <span class="text-3xl font-bold text-indigo-600">3.0%</span>
+                            <span class="text-gray-600">/ Daily ROI</span>
+                        </div>
+                        <div class="mb-6">
+                            <span class="bg-indigo-100 text-indigo-800 text-sm font-medium px-2.5 py-0.5 rounded">33-Day Program</span>
+                        </div>
+                        <ul class="mb-6 space-y-3">
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Min. Deposit: 5,001 USDT</span>
+                            </li>
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Max. Deposit: Unlimited</span>
+                            </li>
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Total Return: 200%</span>
+                            </li>
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Capital Returned: Yes</span>
+                            </li>
+                            <li class="plan-feature">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Dedicated Account Manager</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="plan-card-footer">
+                        <button onclick="selectPlan('vip')" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition duration-200 flex items-center justify-center">
+                            <i class="fas fa-arrow-right mr-2"></i> Invest Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Investment Form Container (Hidden Initially) -->
+        <div id="investment-form-section" class="hidden animate__animated animate__fadeIn">
+            <div class="investment-form-container">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold" id="form-plan-title">Investment Form</h2>
+                    <button onclick="hideInvestmentForm()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <form id="investmentForm">
+                    <div class="mb-4">
+                        <div class="flex justify-between mb-2">
+                            <span class="plan-badge" id="form-plan-badge">Starter</span>
+                            <span class="text-sm text-gray-500">Plan ID: <span id="form-plan-id">starter</span></span>
+                        </div>
+                        <div class="mb-2">
+                            <h3 class="font-medium text-lg" id="form-plan-name">Starter Plan</h3>
+                            <p class="text-gray-500 text-sm" id="form-plan-details">
+                                2.0% daily return · 50 days · 200% total return
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="investmentAmount">Investment Amount (USDT)</label>
+                        <input 
+                            type="number" 
+                            id="investmentAmount" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md" 
+                            placeholder="Enter amount" 
+                            required
+                            oninput="calculateInvestmentPreview()"
+                        >
+                        <p class="text-xs text-gray-500 mt-1" id="form-amount-limits">
+                            Min: 50 USDT, Max: 1,000 USDT
+                        </p>
+                    </div>
+                    
+                    <div id="calculationResult" class="calculation-preview hidden">
+                        <h4 class="font-medium text-indigo-700 mb-2">Investment Preview</h4>
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div>Daily Return:</div>
+                            <div id="dailyReturn" class="font-medium text-right">0 USDT</div>
+                            
+                            <div>Contract Duration:</div>
+                            <div id="duration" class="font-medium text-right">50 days</div>
+                            
+                            <div>Total Profit:</div>
+                            <div id="totalProfit" class="font-medium text-right">0 USDT</div>
+                            
+                            <div>Final Return:</div>
+                            <div id="finalReturn" class="font-medium text-right text-green-600">0 USDT</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="paymentMethod">Payment Method</label>
+                        <select id="paymentMethod" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                            <option value="wallet_balance" selected>Wallet Balance</option>
+                        </select>
+                        
+                        <div id="walletBalanceInfo" class="mt-2 p-3 bg-gray-50 rounded-md border border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-700">Available Balance:</span>
+                                <span id="totalBalance" class="font-bold">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="flex items-start">
+                            <input type="checkbox" id="termsAgreement" class="mt-1 mr-2" required>
+                            <label for="termsAgreement" class="text-sm text-gray-700">
+                                I agree to the <a href="#" class="text-indigo-600 hover:underline">terms and conditions</a> 
+                                and understand that investments carry risk. I am investing funds that I can 
+                                afford to commit for the full duration of the investment.
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <button type="button" onclick="hideInvestmentForm()" class="px-6 py-2.5 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition">
+                            Cancel
+                        </button>
+                        <button type="submit" id="submitInvestment" class="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition">
+                            <i class="fas fa-check-circle mr-2"></i> Confirm Investment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="mt-8 mb-6 bg-yellow-50 p-4 rounded-lg">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-lightbulb text-yellow-500 mt-1"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="font-medium text-yellow-800">Investment Tips</h3>
+                    <p class="text-sm text-yellow-700">Diversify your investments across different plans to balance risk and return. Always invest funds you can afford to commit for the full investment period.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-gray-500 text-sm mt-10 pb-6">
+        <p>&copy; 2025 QuantumFX Pro. All rights reserved.</p>
+        <p class="mt-1">Secure Investment Platform</p>
+    </footer>
+    
+    <script>
+        // Investment plans data
+        const investmentPlans = {
+            "starter": {
+                "name": "Starter Plan",
+                "dailyRoi": 0.02, // 2% daily ROI
+                "totalReturn": 2.0, // 100% return (X2)
+                "duration": 50,
+                "minDeposit": 50,
+                "maxDeposit": 1000,
+                "color": "#6366f1",
+                "colorClass": "indigo"
+            },
+            "premium": {
+                "name": "Premium Plan",
+                "dailyRoi": 0.025, // 2.5% daily ROI
+                "totalReturn": 2.0, // 100% return (X2)
+                "duration": 40,
+                "minDeposit": 1001,
+                "maxDeposit": 5000,
+                "color": "#10b981",
+                "colorClass": "green"
+            },
+            "vip": {
+                "name": "VIP Plan",
+                "dailyRoi": 0.03, // 3% daily ROI
+                "totalReturn": 2.0, // 100% return (X2)
+                "duration": 33,
+                "minDeposit": 5001,
+                "maxDeposit": Infinity,
+                "color": "#4f46e5",
+                "colorClass": "indigo"
+            }
+        };
+
+        // Current selected plan
+        let currentPlan = null;
+
+        // User wallet balance (to be loaded from API)
+        let walletBalance = 0;
+
+        // Function to select an investment plan
+        function selectPlan(planId) {
+            const plan = investmentPlans[planId];
+            if (!plan) {
+                alert('Invalid investment plan selected.');
+                return;
+            }
+
+            currentPlan = planId;
+            
+            // Update form fields with plan details
+            document.getElementById('form-plan-title').textContent = `Invest in ${plan.name}`;
+            document.getElementById('form-plan-badge').textContent = planId.charAt(0).toUpperCase() + planId.slice(1);
+            document.getElementById('form-plan-id').textContent = planId;
+            document.getElementById('form-plan-name').textContent = plan.name;
+            document.getElementById('form-plan-details').textContent = 
+                `${plan.dailyRoi * 100}% daily return · ${plan.duration} days · ${plan.totalReturn * 100}% total return`;
+            
+            // Set amount limits
+            const maxText = plan.maxDeposit === Infinity ? 'Unlimited' : `${plan.maxDeposit.toLocaleString()} USDT`;
+            document.getElementById('form-amount-limits').textContent = 
+                `Min: ${plan.minDeposit.toLocaleString()} USDT, Max: ${maxText}`;
+            
+            // Set input constraints
+            const amountInput = document.getElementById('investmentAmount');
+            amountInput.min = plan.minDeposit;
+            if (plan.maxDeposit !== Infinity) {
+                amountInput.max = plan.maxDeposit;
+            } else {
+                amountInput.removeAttribute('max');
+            }
+            amountInput.value = plan.minDeposit;
+
+            // Update calculation preview styling
+            const calcPreview = document.getElementById('calculationResult');
+            calcPreview.classList.remove('premium', 'vip');
+            if (planId === 'premium') {
+                calcPreview.classList.add('premium');
+            } else if (planId === 'vip') {
+                calcPreview.classList.add('vip');
+            }
+
+            // Update duration display
+            document.getElementById('duration').textContent = `${plan.duration} days`;
+
+            // Show the investment form
+            document.getElementById('investment-form-section').classList.remove('hidden');
+            
+            // Calculate preview with default amount
+            calculateInvestmentPreview();
+            
+            // Scroll to form
+            document.getElementById('investment-form-section').scrollIntoView({
+                behavior: 'smooth'
+            });
+
+            // Disable submit button initially and indicate balance loading
+            const submitButton = document.getElementById('submitInvestment');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading Balance...';
+
+            // Load wallet balance
+            loadWalletBalance();
+        }
+
+        // Function to hide the investment form
+        function hideInvestmentForm() {
+            document.getElementById('investment-form-section').classList.add('hidden');
+            document.getElementById('calculationResult').classList.add('hidden');
+            document.getElementById('investmentAmount').value = '';
+            currentPlan = null;
+
+            // Reset submit button to default state
+            const submitButton = document.getElementById('submitInvestment');
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Confirm Investment';
+        }
+
+        // Function to calculate investment preview
+        function calculateInvestmentPreview() {
+            if (!currentPlan) return;
+            
+            const plan = investmentPlans[currentPlan];
+            const amountInput = document.getElementById('investmentAmount');
+            const amount = parseFloat(amountInput.value);
+            
+            if (isNaN(amount) || amount < plan.minDeposit || (plan.maxDeposit !== Infinity && amount > plan.maxDeposit)) {
+                document.getElementById('calculationResult').classList.add('hidden');
+                return;
+            }
+            
+            // Calculate returns
+            const dailyReturn = amount * plan.dailyRoi;
+            const totalProfit = dailyReturn * plan.duration;
+            const finalReturn = amount + totalProfit;
+            
+            // Update display
+            document.getElementById('dailyReturn').textContent = `${dailyReturn.toFixed(2)} USDT`;
+            document.getElementById('totalProfit').textContent = `${totalProfit.toFixed(2)} USDT`;
+            document.getElementById('finalReturn').textContent = `${finalReturn.toFixed(2)} USDT`;
+            
+            // Show calculation preview
+            document.getElementById('calculationResult').classList.remove('hidden');
+        }        // Function to load user's wallet balance
+        async function loadWalletBalance() {
+            const availableBalanceEl = document.getElementById('totalBalance');
+            const submitButton = document.getElementById('submitInvestment');
+
+            availableBalanceEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            // submitButton is already disabled by selectPlan and text set to "Loading Balance..."
+
+            const token = sessionStorage.getItem('authToken');
+
+            if (!token) {
+                availableBalanceEl.innerHTML = '<span class="text-red-600"><i class="fas fa-exclamation-circle mr-1"></i> Not logged in. <a href="auth.html" class="text-indigo-600 hover:underline">Login to view balance.</a></span>';
+                walletBalance = 0;
+                submitButton.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Login Required';
+                // submitButton remains disabled
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/wallet/balance', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response from server.' }));
+                    walletBalance = 0;
+                    submitButton.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Balance Error';
+                    // submitButton remains disabled
+                    if (response.status === 401 || response.status === 403) {
+                        availableBalanceEl.innerHTML = `<span class="text-red-600"><i class="fas fa-exclamation-circle mr-1"></i> Session expired or invalid. <a href="auth.html" class="text-indigo-600 hover:underline">Please login again.</a></span>`;
+                        sessionStorage.removeItem('authToken'); // Clear invalid token
+                    } else {
+                        availableBalanceEl.innerHTML = `<span class="text-red-600"><i class="fas fa-exclamation-circle mr-1"></i> Error: ${errorData.message || response.statusText}</span>`;
+                    }
+                    console.error('Failed to fetch wallet balance:', response.status, response.statusText, errorData);
+                    return; 
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    const rawBalance = data.balance.available; // Corrected: Access data.balance.available
+                    const numericBalance = parseFloat(rawBalance);
+
+                    if (typeof rawBalance !== 'undefined' && !isNaN(numericBalance)) {
+                        walletBalance = numericBalance; // Store as number
+                        availableBalanceEl.textContent = `${walletBalance.toLocaleString()} USDT`;
+                        submitButton.disabled = false; // Enable button
+                        submitButton.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Confirm Investment';
+                    } else {
+                        console.error('Invalid balance data from API:', rawBalance);
+                        walletBalance = 0;
+                        availableBalanceEl.innerHTML = `<span class="text-red-600"><i class="fas fa-exclamation-circle mr-1"></i> Error: Invalid balance data received.</span>`;
+                        submitButton.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Balance Error';
+                        // submitButton remains disabled
+                    }
+                } else {
+                    walletBalance = 0;
+                    availableBalanceEl.innerHTML = `<span class="text-red-600"><i class="fas fa-exclamation-circle mr-1"></i> ${data.message || 'Could not load balance.'}</span>`;
+                    submitButton.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Balance Error';
+                    // submitButton remains disabled
+                }
+            } catch (error) {
+                console.error('Error loading wallet balance (catch block):', error);
+                walletBalance = 0;
+                if (!availableBalanceEl.innerHTML.includes('Login') && !availableBalanceEl.innerHTML.includes('Error:')) { // Avoid overwriting specific errors
+                    availableBalanceEl.innerHTML = '<span class="text-red-600"><i class="fas fa-exclamation-circle mr-1"></i> Error loading balance. Check console.</span>';
+                }
+                submitButton.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Balance Error';
+                // submitButton remains disabled
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('investmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentPlan) {
+                alert('Please select an investment plan first.');
+                return;
+            }
+            
+            const plan = investmentPlans[currentPlan];
+            const amount = parseFloat(document.getElementById('investmentAmount').value);
+            const termsAgreed = document.getElementById('termsAgreement').checked;
+              // Validate amount
+            if (isNaN(amount) || amount < plan.minDeposit || (plan.maxDeposit !== Infinity && amount > plan.maxDeposit)) {
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'text-red-600 text-sm mt-1';
+                errorMsg.innerHTML = `<i class="fas fa-exclamation-circle mr-1"></i> Please enter a valid amount between ${plan.minDeposit.toLocaleString()} and ${plan.maxDeposit === Infinity ? 'unlimited' : plan.maxDeposit.toLocaleString()} USDT.`;
+                
+                const amountInput = document.getElementById('investmentAmount');
+                amountInput.classList.add('border-red-500');
+                
+                // Remove any existing error message
+                const existingError = amountInput.parentNode.querySelector('.text-red-600');
+                if (existingError) {
+                    existingError.remove();
+                }
+                
+                // Add new error message
+                amountInput.parentNode.appendChild(errorMsg);
+                amountInput.focus();
+                return;
+            }
+            
+            // Validate terms agreement
+            if (!termsAgreed) {
+                const termsCheckbox = document.getElementById('termsAgreement');
+                const termsContainer = termsCheckbox.parentNode;
+                
+                // Remove any existing error message
+                const existingError = termsContainer.parentNode.querySelector('.text-red-600');
+                if (existingError) {
+                    existingError.remove();
+                }
+                
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'text-red-600 text-sm mt-1';
+                errorMsg.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> Please agree to the terms and conditions before proceeding.';
+                
+                termsContainer.parentNode.appendChild(errorMsg);
+                return;
+            }
+            
+            // Check wallet balance
+            if (amount > walletBalance) {
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'text-red-600 text-sm mt-1 animate__animated animate__fadeIn';
+                errorMsg.innerHTML = `
+                    <i class="fas fa-exclamation-circle mr-1"></i> 
+                    Insufficient funds in your wallet. Available: ${walletBalance.toLocaleString()} USDT, Required: ${amount.toLocaleString()} USDT.
+                    <a href="deposit.html" class="text-indigo-600 hover:underline ml-1">Add Funds</a>
+                `;
+                
+                const walletInfo = document.getElementById('walletBalanceInfo');
+                
+                // Remove any existing error message
+                const existingError = walletInfo.parentNode.querySelector('.text-red-600');
+                if (existingError) {
+                    existingError.remove();
+                }
+                
+                walletInfo.parentNode.appendChild(errorMsg);
+                return;
+            }
+            
+            // Disable submit button to prevent double submission
+            const submitButton = document.getElementById('submitInvestment');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+            
+            const token = sessionStorage.getItem('authToken'); // Use sessionStorage for token
+            if (!token) {
+                // Handle case where token is missing (e.g., show error, redirect to login)
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded animate__animated animate__fadeInRight';
+                errorAlert.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span>Authentication error. Please log in again.</span>
+                    </div>
+                `;
+                document.body.appendChild(errorAlert);
+                setTimeout(() => {
+                    errorAlert.classList.add('animate__fadeOutRight');
+                    setTimeout(() => errorAlert.remove(), 500);
+                    // window.location.href = 'auth.html'; // Optional redirect
+                }, 3000);
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Confirm Investment';
+                return;
+            }
+
+            try {                // Submit investment via API - PIN not required for investment operations
+                const response = await fetch('/api/investment/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // Add Authorization header
+                    },
+                    credentials: 'include', // Keep if needed
+                    body: JSON.stringify({
+                        planId: currentPlan,
+                        amount: amount
+                        // No PIN required for investment operations
+                    })
+                });
+                
+                const data = await response.json();
+                  if (data.success) {
+                    // Show success message and redirect
+                    const successAlert = document.createElement('div');
+                    successAlert.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded animate__animated animate__fadeInRight';
+                    successAlert.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <span>Investment created successfully!</span>
+                        </div>
+                    `;
+                    document.body.appendChild(successAlert);
+                    
+                    // Redirect after a short delay
+                    setTimeout(() => {
+                        window.location.href = 'investment.html';
+                    }, 1500);
+                } else {
+                    // Show error message
+                    const errorMsg = data.message || 'Unknown error occurred';
+                    const errorAlert = document.createElement('div');
+                    errorAlert.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded animate__animated animate__fadeInRight';
+                    errorAlert.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            <span>Failed to create investment: ${errorMsg}</span>
+                        </div>
+                    `;
+                    document.body.appendChild(errorAlert);
+                    
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Confirm Investment';
+                    
+                    // Remove error alert after a few seconds
+                    setTimeout(() => {
+                        errorAlert.classList.add('animate__fadeOutRight');
+                        setTimeout(() => {
+                            errorAlert.remove();
+                        }, 500);
+                    }, 4000);
+                }
+            } catch (error) {
+                console.error('Error creating investment:', error);
+                
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded animate__animated animate__fadeInRight';
+                errorAlert.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span>An error occurred while processing your investment. Please try again later.</span>
+                    </div>
+                `;
+                document.body.appendChild(errorAlert);
+                
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Confirm Investment';
+                
+                // Remove error alert after a few seconds
+                setTimeout(() => {
+                    errorAlert.classList.add('animate__fadeOutRight');
+                    setTimeout(() => {
+                        errorAlert.remove();
+                    }, 500);
+                }, 4000);
+            }
+        });        // Function to clear input error styling
+        function clearInputError(inputElement) {
+            inputElement.classList.remove('border-red-500');
+            const errorMsg = inputElement.parentNode.querySelector('.text-red-600');
+            if (errorMsg) {
+                errorMsg.remove();
+            }
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up input event listeners to clear error messages
+            const amountInput = document.getElementById('investmentAmount');
+            amountInput.addEventListener('input', () => {
+                clearInputError(amountInput);
+                calculateInvestmentPreview();
+            });
+            
+            const termsCheckbox = document.getElementById('termsAgreement');
+            termsCheckbox.addEventListener('change', () => {
+                const errorMsg = termsCheckbox.parentNode.parentNode.querySelector('.text-red-600');
+                if (errorMsg) {
+                    errorMsg.remove();
+                }
+            });
+            
+            // Check if the URL has a plan parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const planParam = urlParams.get('plan');
+            
+            if (planParam && investmentPlans[planParam]) {
+                // Auto-select the plan from URL parameter
+                selectPlan(planParam);
+            }
+        });
+    </script>
+    <script src="js/wallet.js"></script>
+</body>
+</html>

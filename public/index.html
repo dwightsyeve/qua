@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantumFX Pro - AI Driven Investment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="description" content="QuantumFX Pro - AI-driven investment platform for African markets, providing exceptional returns through advanced algorithms and deep market knowledge.">
+    <meta property="og:title" content="QuantumFX Pro - AI Driven Investment">
+    <meta property="og:description" content="Maximize returns and minimize risks in African markets with our AI-powered investment platform.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1611974789855-9c2a0a7236e3">
+    <meta property="og:url" content="https://quantumfxpro.com">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/48/000000/futures.png">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 16px 16px;
+            scroll-behavior: smooth;
+        }
+        
+        /* Frosted Glass Effect for Cards */
+        .frosted-card {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            border: 1px solid rgba(209, 213, 219, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.17);
+        }
+        
+        /* Hero section with gradient overlay and parallax effect */
+        .hero {
+            position: relative;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            background: url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236e3?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+            background-attachment: fixed;
+        }
+        
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(49, 46, 129, 0.9), rgba(67, 56, 202, 0.7));
+        }
+        
+        /* Animated background shapes */
+        .bg-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .shape-1 {
+            width: 400px;
+            height: 400px;
+            top: -200px;
+            right: -200px;
+            animation: float 8s ease-in-out infinite alternate;
+        }
+        
+        .shape-2 {
+            width: 300px;
+            height: 300px;
+            bottom: -150px;
+            left: -150px;
+            animation: float 10s ease-in-out infinite alternate-reverse;
+        }
+        
+        .shape-3 {
+            width: 200px;
+            height: 200px;
+            top: 30%;
+            right: 10%;
+            animation: float 6s ease-in-out infinite alternate;
+        }
+        
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(90deg, #a78bfa, #6366f1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: inline-block;
+        }
+        
+        /* CTA Button with animation */
+        .cta-button {
+            background: linear-gradient(90deg, #4caf50, #81c784);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1.25rem;
+            margin-top: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(76, 175, 80, 0.4);
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.7s;
+            z-index: -1;
+        }
+        
+        .cta-button:hover::before {
+            left: 100%;
+        }
+        
+        /* Feature cards with enhanced hover effects and 3D transform */
+        .feature-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #4caf50, #81c784);
+            transition: transform 0.3s ease;
+            transform: translateY(0);
+            z-index: -1;
+        }
+        
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background: linear-gradient(to top, rgba(76, 175, 80, 0.03), transparent);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            z-index: -1;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-15px) perspective(1000px) rotateX(5deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-card:hover::before {
+            transform: translateY(5px);
+        }
+        
+        .feature-card:hover::after {
+            height: 100%;
+        }
+        
+        .feature-card .icon-wrapper {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(129, 199, 132, 0.1));
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .feature-card:hover .icon-wrapper {
+            transform: rotateY(180deg);
+        }
+        
+        .feature-card i {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #4caf50, #81c784);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .feature-card:hover i {
+            transform: rotateY(-180deg);
+        }
+        
+        /* Stats section with enhanced visuals */
+        .stats-section {
+            background: linear-gradient(135deg, #4c1d95, #5b21b6);
+            color: white;
+            border-radius: 1rem;
+            padding: 3.5rem 2rem;
+            box-shadow: 0 15px 40px rgba(91, 33, 182, 0.3);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        
+        .stats-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+            opacity: 0.1;
+            z-index: 0;
+            animation: slowly-move 40s ease-in-out infinite alternate;
+        }
+        
+        @keyframes slowly-move {
+            0% { transform: scale(1) rotate(0deg); }
+            100% { transform: scale(1.05) rotate(1deg); }
+        }
+        
+        .stats-item {
+            position: relative;
+            z-index: 1;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        
+        .stats-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(90deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+        
+        .stat-value::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #4ade80, #a7f3d0);
+            border-radius: 3px;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        /* Testimonial cards with glass effect */
+        .testimonial-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .testimonial-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #4caf50;
+        }
+        
+        /* Floating elements with enhanced animations */
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(1deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        /* Shine effect for cards */
+        .shine-effect {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shine-effect::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -75%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 100%);
+            transform: skewX(-25deg);
+            z-index: 2;
+            transition: all 0.75s;
+        }
+
+        .shine-effect:hover::before {
+            animation: shine 1.5s;
+        }
+
+        @keyframes shine {
+            100% { left: 125%; }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); }
+            25% { transform: translateY(-10px) translateX(5px); }
+            50% { transform: translateY(0) translateX(10px); }
+            75% { transform: translateY(10px) translateX(5px); }
+            100% { transform: translateY(0) translateX(0); }
+        }
+        
+        /* Navigation */
+        .nav-link {
+            position: relative;
+            padding: 0.5rem 1rem;
+            color: #4b5563;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #4caf50, #81c784);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: #10b981;
+        }
+        
+        .nav-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+        
+        /* Pulse animation */
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+        
+        .pulse-animation {
+            animation: pulse-border 2s infinite;
+        }
+        
+        /* Chart container with enhanced styling */
+        .chart-container {
+            height: 350px;
+            width: 100%;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #4caf50, #6366f1, #4caf50);
+            z-index: -1;
+            animation: gradientBorder 3s linear infinite;
+            border-radius: 14px;
+        }
+        
+        @keyframes gradientBorder {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Scrolling animation for sections */
+        .scroll-animation {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        
+        .scroll-animation.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Logo styles with enhanced animation */
+        .logo {
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4c1d95, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-size: 22px;
+            box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .logo-icon::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.15);
+            transform: rotate(45deg);
+            animation: shimmer 3s linear infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: rotate(45deg) translateY(-100%); }
+            100% { transform: rotate(45deg) translateY(100%); }
+        }
+        
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Ticker animation for crypto prices */
+        .crypto-ticker {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            white-space: nowrap;
+        }
+        
+        .crypto-ticker::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .crypto-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .crypto-up {
+            color: #10b981;
+        }
+        
+        .crypto-down {
+            color: #ef4444;
+        }
+        
+        /* FAQ accordion styling */
+        .faq-accordion {
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-accordion:hover {
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .faq-question {
+            padding: 1.25rem;
+            cursor: pointer;
+            position: relative;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .faq-answer {
+            padding: 0 1.25rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+        
+        .faq-accordion.active .faq-answer {
+            padding: 0 1.25rem 1.25rem;
+            max-height: 500px;
+        }
+        
+        .scroll-down-btn {
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        
+        .scroll-down-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-50%) translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar with frosted glass effect -->
+    <nav class="fixed w-full z-50 frosted-card py-3 px-6 animate__animated animate__fadeInDown">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="logo-text">
+                    <h2 class="text-2xl font-bold">QuantumFX<span class="text-green-500">Pro</span></h2>
+                    <p class="text-xs text-indigo-500">AI Driven</p>
+                </div>
+            </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="aboutus.html" class="nav-link">About Us</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#testimonials" class="nav-link">Testimonials</a>
+                <a href="auth.html" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300">Login</a>
+                <a href="auth.html" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition duration-300">Register</a>
+            </div>
+            <button class="md:hidden text-2xl text-indigo-600" id="mobileMenuButton">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile menu -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" id="mobileMenu">
+        <div class="fixed inset-y-0 right-0 max-w-xs w-full bg-white shadow-xl p-6 z-50 transform transition-transform duration-300 translate-x-0">
+            <div class="flex justify-between items-center mb-6">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h2 class="text-2xl font-bold">QuantumFX<span class="text-green-500">Pro</span></h2>
+                        <p class="text-xs text-indigo-500">AI Driven</p>
+                    </div>
+                </div>
+                <button id="closeMenu" class="text-2xl text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="flex flex-col space-y-4">
+                <a href="index.html" class="block py-2 text-lg hover:text-green-500 transition">Home</a>
+                <a href="aboutus.html" class="block py-2 text-lg hover:text-green-500 transition">About Us</a>
+                <a href="#features" class="block py-2 text-lg hover:text-green-500 transition">Features</a>
+                <a href="#testimonials" class="block py-2 text-lg hover:text-green-500 transition">Testimonials</a>
+                <a href="auth.html" class="block py-2 text-lg bg-indigo-600 text-white px-4 rounded-lg hover:bg-indigo-700 transition">Login</a>
+                <a href="auth.html" class="block py-2 text-lg mt-2 bg-green-500 text-white px-4 rounded-lg hover:bg-green-600 transition">Register</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-overlay"></div>
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="max-w-2xl animate__animated animate__fadeIn">
+                <h1 class="text-5xl font-bold mb-6">The Future of <span class="text-yellow-400">Investing</span> is Here</h1>
+                <p class="text-xl mb-6 opacity-90">Powered by advanced AI algorithms to maximize your returns and minimize risks in the African market.</p>
+                <div id="typewriter" class="text-lg mb-8 text-green-300">Invest in Africa's growing economy</div>
+                <div class="flex flex-wrap">
+                    <a href="auth.html" class="cta-button mr-4 pulse-animation">
+                        <i class="fas fa-rocket mr-2"></i> Start Investing Now
+                    </a>
+                    <a href="aboutus.html" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg hover:bg-white hover:text-indigo-800 transition duration-300 mt-4 md:mt-0">
+                        Learn More
+                    </a>
+                </div>
+                <div class="flex items-center mt-8">
+                    <div class="flex -space-x-2 mr-4">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" class="w-8 h-8 rounded-full border-2 border-white" alt="User">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" class="w-8 h-8 rounded-full border-2 border-white" alt="User">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" class="w-8 h-8 rounded-full border-2 border-white" alt="User">
+                        <img src="https://images.unsplash.com/photo-1531384441138-2736e62e0919?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" class="w-8 h-8 rounded-full border-2 border-white" alt="User">
+                    </div>
+                    <span class="text-sm text-white opacity-90">+5,000 investors already joined</span>
+                </div>
+            </div>
+        </div>
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <a href="#features" class="text-white opacity-70 hover:opacity-100">
+                <i class="fas fa-chevron-down text-2xl"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="stats-section animate__animated animate__fadeIn">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="stats-item text-center animate__animated animate__fadeInUp">
+                        <i class="fas fa-users text-3xl mb-3 text-green-300"></i>
+                        <span class="stat-value" id="userCount">5,000+</span>
+                        <span class="stat-label">Active Investors</span>
+                    </div>
+                    <div class="stats-item text-center animate__animated animate__fadeInUp animate__delay-1s">
+                        <i class="fas fa-chart-line text-3xl mb-3 text-green-300"></i>
+                        <span class="stat-value" id="returnRate">18%</span>
+                        <span class="stat-label">Average Return Rate</span>
+                    </div>
+                    <div class="stats-item text-center animate__animated animate__fadeInUp animate__delay-2s">
+                        <i class="fas fa-globe-africa text-3xl mb-3 text-green-300"></i>
+                        <span class="stat-value" id="countriesCount">26</span>
+                        <span class="stat-label">African Countries</span>
+                    </div>
+                    <div class="stats-item text-center animate__animated animate__fadeInUp animate__delay-3s">
+                        <i class="fas fa-dollar-sign text-3xl mb-3 text-green-300"></i>
+                        <span class="stat-value" id="totalInvested">$120M</span>
+                        <span class="stat-label">Total Invested</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-3 animate__animated animate__fadeInUp">Why Choose <span class="gradient-text">QuantumFX Pro</span></h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12 animate__animated animate__fadeInUp"></p>
+                Our platform combines cutting-edge AI technology with deep knowledge of African markets to deliver exceptional investment performance.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="feature-card animate__animated animate__fadeInUp">
+                    <i class="fas fa-robot"></i>
+                    <h3 class="text-xl font-bold mt-4 mb-3">AI-Powered Analytics</h3>
+                    <p class="text-gray-600">Advanced algorithms analyze market trends and predict profitable investment opportunities in real-time.</p>
+                </div>
+                <div class="feature-card animate__animated animate__fadeInUp animate__delay-1s">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3 class="text-xl font-bold mt-4 mb-3">Bank-Level Security</h3>
+                    <p class="text-gray-600">Your investments and personal information are protected with enterprise-grade encryption and security protocols.</p>
+                </div>
+                <div class="feature-card animate__animated animate__fadeInUp animate__delay-2s">
+                    <i class="fas fa-chart-pie"></i>
+                    <h3 class="text-xl font-bold mt-4 mb-3">Diversified Portfolios</h3>
+                    <p class="text-gray-600">Spread your investments across multiple African markets to maximize returns while minimizing risk.</p>
+                </div>
+                <div class="feature-card animate__animated animate__fadeInUp">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    <h3 class="text-xl font-bold mt-4 mb-3">Low Minimum Investment</h3>
+                    <p class="text-gray-600">Start your investment journey with as little as $100 and scale up as you grow more comfortable.</p>
+                </div>
+                <div class="feature-card animate__animated animate__fadeInUp animate__delay-1s">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3 class="text-xl font-bold mt-4 mb-3">Mobile Accessibility</h3>
+                    <p class="text-gray-600">Manage your investments anytime, anywhere with our responsive web platform optimized for all devices.</p>
+                </div>
+                <div class="feature-card animate__animated animate__fadeInUp animate__delay-2s">
+                    <i class="fas fa-headset"></i>
+                    <h3 class="text-xl font-bold mt-4 mb-3">24/7 Support</h3>
+                    <p class="text-gray-600">Our dedicated team is always available to assist you with any questions or concerns about your investments.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Performance Chart Section -->
+    <section class="py-20 bg-indigo-50">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="animate__animated animate__fadeInLeft">
+                    <h2 class="text-3xl font-bold mb-6">Consistent <span class="gradient-text">Performance</span> Over Time</h2>
+                    <p class="text-lg text-gray-700 mb-6">Our investment strategies have consistently outperformed traditional African market indices, providing our investors with superior returns.</p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>30% higher returns than the average African market indices</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Reduced volatility through AI-optimized diversification</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Quarterly growth even during market downturns</span>
+                        </li>
+                    </ul>
+                    <div class="mt-8">
+                        <a href="auth.html" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition duration-300">Start Investing</a>
+                    </div>
+                </div>
+                <div class="chart-container frosted-card p-6 rounded-lg animate__animated animate__fadeInRight">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-20">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-3 animate__animated animate__fadeIn">What Our <span class="gradient-text">Investors Say</span></h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12 animate__animated animate__fadeIn">
+                Join thousands of satisfied investors across Africa who are growing their wealth with QuantumFX Pro.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="testimonial-card animate__animated animate__fadeInUp">
+                    <div class="flex items-center mb-4">
+                        <img src="https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" alt="Testimonial" class="testimonial-avatar mr-4">
+                        <div>
+                            <h4 class="font-bold">Kwame Nkrumah</h4>
+                            <p class="text-sm text-gray-500">Ghana</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700">
+                        "I've been investing with QuantumFX Pro for 18 months now and have seen a 27% return on my initial investment. Their AI-driven approach has truly transformed my financial future."
+                    </p>
+                    <div class="mt-4 text-yellow-500">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card animate__animated animate__fadeInUp animate__delay-1s">
+                    <div class="flex items-center mb-4">
+                        <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" alt="Testimonial" class="testimonial-avatar mr-4">
+                        <div>
+                            <h4 class="font-bold">Amara Diallo</h4>
+                            <p class="text-sm text-gray-500">Senegal</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700">
+                        "The platform is incredibly user-friendly and the customer support team is always ready to help. I've recommended QuantumFX Pro to my entire family."
+                    </p>
+                    <div class="mt-4 text-yellow-500">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card animate__animated animate__fadeInUp animate__delay-2s">
+                    <div class="flex items-center mb-4">
+                        <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" alt="Testimonial" class="testimonial-avatar mr-4">
+                        <div>
+                            <h4 class="font-bold">Nelson Mandela</h4>
+                            <p class="text-sm text-gray-500">South Africa</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700">
+                        "As someone who was skeptical about online investment platforms, I've been pleasantly surprised by the professionalism and returns from QuantumFX Pro. Now I can finally plan for retirement."
+                    </p>
+                    <div class="mt-4 text-yellow-500">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-4xl font-bold mb-6 animate__animated animate__fadeIn">Ready to Start Your Investment Journey?</h2>
+            <p class="text-lg mb-8 max-w-2xl mx-auto animate__animated animate__fadeIn">
+                Join thousands of investors across Africa who are growing their wealth with our AI-powered platform.
+            </p>
+            <div class="flex flex-wrap justify-center">
+                <a href="auth.html" class="bg-white text-indigo-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition duration-300 mx-2 mb-4 animate__animated animate__fadeInUp">
+                    Create Free Account
+                </a>
+                <a href="aboutus.html" class="bg-transparent border-2 border-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-indigo-600 transition duration-300 mx-2 mb-4 animate__animated animate__fadeInUp animate__delay-1s">
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="logo-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="logo-text">
+                            <h3 class="text-2xl font-bold">QuantumFX<span class="text-green-500">Pro</span></h3>
+                            <p class="text-xs text-gray-400">AI Driven</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        Empowering African investors with advanced AI-driven investment solutions for a prosperous future.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-green-500 transition">Home</a></li>
+                        <li><a href="aboutus.html" class="text-gray-400 hover:text-green-500 transition">About Us</a></li>
+                        <li><a href="#features" class="text-gray-400 hover:text-green-500 transition">Features</a></li>
+                        <li><a href="#testimonials" class="text-gray-400 hover:text-green-500 transition">Testimonials</a></li>
+                        <li><a href="auth.html" class="text-gray-400 hover:text-green-500 transition">Login</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-green-500 transition">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-green-500 transition">Market Reports</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-green-500 transition">Investment Guides</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-green-500 transition">FAQ</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-green-500 transition">Help Center</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Contact Us</h4>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-2 text-green-500"></i>
+                            <span class="text-gray-400">123 Financial District, Accra, Ghana</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope mt-1 mr-2 text-green-500"></i>
+                            <span class="text-gray-400">support@quantumfxpro.com</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-phone-alt mt-1 mr-2 text-green-500"></i>
+                            <span class="text-gray-400">+233 123 456 789</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm mb-4 md:mb-0">
+                    &copy; 2025 QuantumFX Pro. All rights reserved.
+                </p>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Legal</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Mobile Menu Toggle
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const closeMenu = document.getElementById('closeMenu');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.remove('hidden');
+            });
+        }
+
+        if (closeMenu) {
+            closeMenu.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        }
+
+        // Initialize Performance Chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['2020', '2021', '2022', '2023', '2024', '2025'],
+                    datasets: [{
+                        label: 'QuantumFX Pro Returns',
+                        data: [5, 12, 18, 25, 32, 40],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 4,
+                        pointBackgroundColor: '#10b981',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'African Market Average',
+                        data: [4, 7, 10, 13, 16, 20],
+                        borderColor: '#6b7280',
+                        backgroundColor: 'rgba(107, 114, 128, 0.05)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#6b7280',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

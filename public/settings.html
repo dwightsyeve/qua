@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - CryptoInvest Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Toggle Switch CSS -->
+    <style>
+        .sidebar {
+            height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                position: relative;
+            }
+        }
+        /* Ensure main content doesn't jump on scrollbar appearance */
+        body {
+            scrollbar-gutter: stable;
+            /* Subtle background pattern */
+            background-color: #f8fafc;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 16px 16px;
+            font-family: 'Poppins', sans-serif;
+        }
+        /* Improved sidebar transition */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+        /* Main content transition for margin adjustment */
+        main {
+            transition: margin-left 0.3s ease-in-out;
+        }
+        /* Frosted Glass Effect for Cards */
+        .frosted-card {
+            background-color: rgba(255, 255, 255, 0.6); /* Semi-transparent white */
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            border: 1px solid rgba(209, 213, 219, 0.3); /* Subtle border */
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.17);
+        }
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(90deg, #a78bfa, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            display: inline-block; /* Necessary for background-clip */
+        }
+
+        /* Settings-specific styles */
+        .settings-card {
+            background: linear-gradient(145deg, #ffffff, #f9fafb);
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+        .settings-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            transform: translateY(-3px);
+        }
+        
+        .settings-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #374151;
+            display: flex;
+            align-items: center;
+        }
+        
+        .settings-title i {
+            margin-right: 0.5rem;
+            color: #6366f1;
+        }
+        
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+        
+        .settings-label {
+            display: flex;
+            align-items: center;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        
+        .settings-label i {
+            margin-right: 0.75rem;
+            color: #6b7280;
+            font-size: 1.1rem;
+            width: 1.5rem;
+            text-align: center;
+        }
+        
+        .settings-description {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #6366f1;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* Notification Badge */
+        .notification-badge {
+            background-color: #ef4444;
+            color: white;
+            border-radius: 9999px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        /* Status Indicators */
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        
+        .status-active {
+            background-color: #10b981;
+            box-shadow: 0 0 5px #10b981;
+        }
+        
+        .status-pending {
+            background-color: #f59e0b;
+            box-shadow: 0 0 5px #f59e0b;
+        }
+        
+        .status-inactive {
+            background-color: #6b7280;
+        }
+        
+        /* Custom Select Styling */
+        .custom-select {
+            position: relative;
+            display: inline-block;
+            width: 200px;
+        }
+        
+        .custom-select select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding: 8px 35px 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            background-color: #fff;
+            cursor: pointer;
+            width: 100%;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .custom-select:after {
+            content: '\f107';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #6b7280;
+        }
+        
+        /* Profile Section */
+        .profile-picture {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #6366f1;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-upload-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: #6366f1;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .profile-upload-btn:hover {
+            background-color: #4f46e5;
+            transform: scale(1.1);
+        }
+        
+        /* Button styles */
+        .settings-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .settings-btn-primary {
+            background-color: #6366f1;
+            color: white;
+            border: none;
+        }
+        
+        .settings-btn-primary:hover {
+            background-color: #4f46e5;
+        }
+        
+        .settings-btn-secondary {
+            background-color: #f3f4f6;
+            color: #4b5563;
+            border: 1px solid #d1d5db;
+        }
+        
+        .settings-btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .settings-btn-danger {
+            background-color: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .settings-btn-danger:hover {
+            background-color: #fecaca;
+        }
+        
+        .settings-btn i {
+            margin-right: 0.5rem;
+        }
+        
+        /* Input field styles */
+        .settings-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .settings-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+        
+        /* Animation for changes saved */
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            10%, 90% { opacity: 1; }
+        }
+        
+        .feedback-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            background-color: #10b981;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            display: none;
+        }
+        
+        .feedback-message.show {
+            display: block;
+            animation: fadeInOut 3s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+<div class="flex min-h-screen">
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="bg-indigo-900 text-white w-64 fixed inset-y-0 left-0 z-40 transform -translate-x-full md:translate-x-0 p-4 flex flex-col shadow-lg">
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center">
+                <h2 class="text-2xl font-bold">QuantumFX<span class="text-yellow-400">Pro</span></h2>
+                <p class="text-xs text-indigo-200">AI Driven</p>
+            </div>
+            <button id="sidebarClose" class="md:hidden text-2xl text-indigo-200 hover:text-white"><i class="fas fa-times"></i></button>
+        </div>
+        <nav class="space-y-1 px-2">
+                <a href="dashboard.html" class="flex items-center px-4 py-3 bg-indigo-800 rounded-lg text-white">
+                    <i class="fas fa-chart-line w-5 mr-3 text-center"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="investment.html" class="flex items-center px-4 py-3 hover:bg-indigo-800 rounded-lg transition duration-200">
+                    <i class="fas fa-coins w-5 mr-3 text-center"></i>
+                    <span>Investments</span>
+                </a>
+                <a href="wallet.html" class="flex items-center px-4 py-3 hover:bg-indigo-800 rounded-lg transition duration-200">
+                    <i class="fas fa-wallet w-5 mr-3 text-center"></i>
+                    <span>Wallet</span>
+                </a>
+                <a href="referrals.html" class="flex items-center px-4 py-3 hover:bg-indigo-800 rounded-lg transition duration-200">
+                    <i class="fas fa-users w-5 mr-3 text-center"></i>
+                    <span>Referrals</span>
+                </a>
+                <a href="settings.html" class="flex items-center px-4 py-3 hover:bg-indigo-800 rounded-lg transition duration-200">
+                    <i class="fas fa-cog w-5 mr-3 text-center"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+        <div class="mt-auto pt-6">
+            <a href="auth.html" class="flex items-center px-4 py-3 text-red-300 hover:bg-indigo-800 rounded-lg transition duration-200">
+                <i class="fas fa-sign-out-alt w-5 mr-3 text-center"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+    <!-- Overlay for mobile -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden transition-opacity duration-300"></div>
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-64 p-6 w-full overflow-y-auto">
+        <header class="bg-white/80 backdrop-blur-sm rounded-lg shadow-sm p-4 mb-6 flex justify-between items-center sticky top-0 z-20 border border-gray-200/50">
+            <button id="sidebarOpen" class="md:hidden text-2xl mr-2 text-gray-600 hover:text-indigo-600"><i class="fas fa-bars"></i></button>
+            <h1 class="text-xl font-bold text-gray-800 flex items-center animate__animated animate__fadeInDown">
+                <i class="fas fa-cog text-indigo-500 mr-2 animate-spin"></i> Account Settings
+            </h1>
+            <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-semibold flex items-center animate__animated animate__fadeInRight">
+                <i class="fas fa-user-shield mr-1"></i> Secure Settings
+            </span>
+        </header>
+
+        <!-- Profile Card -->
+        <div class="settings-card animate__animated animate__fadeIn">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div class="flex flex-col md:flex-row items-start md:items-center">
+                    <div class="relative mb-4 md:mb-0 md:mr-6">
+                        <img id="profilePictureDisplay" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Profile Picture" class="profile-picture">
+                        <label for="profilePictureUpload" class="profile-upload-btn">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                        <input type="file" id="profilePictureUpload" accept="image/*" class="hidden">
+                    </div>
+                    
+                    <div>
+                        <h3 id="userProfileName" class="text-xl font-semibold text-gray-800">Alex Johnson</h3>
+                        <p class="text-gray-600 flex items-center">
+                            <i class="fas fa-envelope mr-2 text-indigo-500"></i>
+                            <span id="userEmail">alex.johnson@example.com</span>
+                            <button id="changeEmailBtn" class="text-indigo-500 text-sm ml-2">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                        </p>
+                        <div class="flex items-center mt-2">
+                            <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold flex items-center">
+                                <i class="fas fa-check-circle mr-1"></i> Verified
+                            </span>
+                            <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs font-semibold ml-2 flex items-center">
+                                <i class="fas fa-crown mr-1"></i> Premium User
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="settings-btn settings-btn-primary mt-4 md:mt-0">
+                    <i class="fas fa-user-edit"></i> Edit Profile
+                </button>
+            </div>
+        </div>
+        
+        <!-- Security Settings Card -->
+        <div class="settings-card animate__animated animate__fadeIn animate__delay-1s">
+            <h3 class="settings-title">
+                <i class="fas fa-shield-alt"></i> Security Settings
+            </h3>
+            
+            <div class="settings-item">
+                <div>
+                    <div class="settings-label">
+                        <i class="fas fa-key"></i> Password
+                    </div>
+                    <p class="settings-description">Change your account password</p>
+                </div>
+                <button id="changePasswordBtn" class="settings-btn settings-btn-secondary">
+                    <i class="fas fa-pen"></i> Change
+                </button>
+            </div>
+            
+            <div class="settings-item">
+                <div>
+                    <div class="settings-label">
+                        <i class="fas fa-mobile-alt"></i> Two-Factor Authentication
+                    </div>
+                    <p class="settings-description">Add an extra layer of security to your account</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="twoFactorToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <div id="twoFactorOptions" class="pl-8 pr-4 pb-4 hidden">
+                <div class="mt-2 mb-3">
+                    <label class="text-sm text-gray-600 block mb-1">Select 2FA Method:</label>
+                    <div class="custom-select">
+                        <select id="twoFactorMethod" class="settings-input w-full">
+                            <option value="app">Authenticator App</option>
+                            <option value="sms">SMS</option>
+                            <option value="email">Email</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="qrCodeContainer" class="my-4 p-4 bg-gray-100 rounded-lg text-center">
+                    <p class="mb-2 text-sm text-gray-600">Scan this QR code with your authenticator app</p>
+                    <div class="inline-block p-2 bg-white">
+                        <!-- Placeholder for QR code image -->
+                        <div id="qrCodeImage" class="w-40 h-40 bg-gray-200 flex items-center justify-center">
+                            <span class="text-xs text-gray-500">QR Code Placeholder</span>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <input type="text" id="twoFactorCode" placeholder="Enter verification code" class="settings-input mt-2 w-full md:w-1/2 mx-auto">
+                        <button id="verifyTwoFactorBtn" class="settings-btn settings-btn-primary mt-2">Verify & Enable</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notification Settings Card -->
+        <div class="settings-card animate__animated animate__fadeIn animate__delay-2s">
+            <h3 class="settings-title">
+                <i class="fas fa-bell"></i> Notification Settings
+            </h3>
+            
+            <div class="settings-item">
+                <div>
+                    <div class="settings-label">
+                        <i class="fas fa-envelope"></i> Email Notifications
+                    </div>
+                    <p class="settings-description">Receive news, updates and important alerts via email</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="emailNotificationsToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <div class="settings-item">
+                <div>
+                    <div class="settings-label">
+                        <i class="fas fa-dollar-sign"></i> Investment Updates
+                    </div>
+                    <p class="settings-description">Get notified about investment performance and returns</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="investmentUpdatesToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <div class="settings-item">
+                <div>
+                    <div class="settings-label">
+                        <i class="fas fa-wallet"></i> Balance Changes
+                    </div>
+                    <p class="settings-description">Receive alerts when your account balance changes</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="balanceChangesToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <div class="settings-item">
+                <div>
+                    <div class="settings-label">
+                        <i class="fas fa-users"></i> Referral Activity
+                    </div>
+                    <p class="settings-description">Get notified when someone joins using your referral link</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="referralActivityToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Wallet Settings Card -->
+        <div class="settings-card animate__animated animate__fadeIn animate__delay-3s">
+            <h3 class="settings-title">
+                <i class="fas fa-wallet"></i> Wallet Settings
+            </h3>
+            
+            <div class="settings-item">
+                <div>
+                    <div class="settings-label">
+                        <i class="fas fa-lock"></i> Withdrawal PIN
+                    </div>
+                    <p class="settings-description">Set a PIN code for additional security during withdrawals</p>
+                </div>
+                <button id="changeWithdrawalPINBtn" class="settings-btn settings-btn-secondary">
+                    <i class="fas fa-pen"></i> Change PIN
+                </button>
+            </div>
+            
+          
+        
+        <!-- Appearance Settings Card -->
+        <div class="settings-card animate__animated animate__fadeIn animate__delay-4s">
+            <h3 class="settings-title">
+                <i class="fas fa-paint-brush"></i> Appearance
+            </h3>
+            
+            <div class="settings-item">
+                <div>
+                    <div class="settings-label">
+                        <i class="fas fa-moon"></i> Dark Mode
+                    </div>
+                    <p class="settings-description">Toggle between light and dark mode</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="darkMoeToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <div class="settings-item">
+                <div>
+                    <div class="settings-label">
+                        <i class="fas fa-language"></i> Language
+                    </div>
+                    <p class="settings-description">Choose your preferred language</p>
+                </div>
+                <div class="custom-select">
+                    <select id="languageSelect" class="settings-input">
+                        <option value="en">English</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Privacy Settings Card -->
+        <div class="settings-card animate__animated animate__fadeIn animate__delay-5s">
+            <h3 class="settings-title">
+                <i class="fas fa-user-secret"></i> Privacy Settings
+            </h3>
+            
+            <div class="settings-item">
+                <div>
+                    <div class="settings-label">
+                        <i class="fas fa-history"></i> Activity Logs
+                    </div>
+                    <p class="settings-description">Store and display your account activity logs</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="activityLogsToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            
+            
+            <div class="settings-item">
+                <div>
+                    <div class="settings-label">
+                        <i class="fas fa-cookie"></i> Cookies Preferences
+                    </div>
+                    <p class="settings-description">Manage how we use cookies to enhance your experience</p>
+                </div>
+                <button id="cookiePreferencesBtn" class="settings-btn settings-btn-secondary">
+                    <i class="fas fa-cog"></i> Manage
+                </button>
+            </div>
+        </div>
+        
+        <!-- Save Changes Button -->
+        <div class="text-center mb-8">
+            <button id="saveSettingsBtn" class="settings-btn settings-btn-primary py-3 px-8 text-lg">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+        </div>
+
+        <div id="feedbackMessage" class="feedback-message">
+            <i class="fas fa-check-circle mr-2"></i> Settings saved successfully!
+        </div>
+
+        <footer class="text-center text-gray-500 text-sm mt-10 animate__animated animate__fadeInUp">
+            <p>&copy; 2025 CryptoInvestPro. All rights reserved.</p>
+            <p class="mt-1">USDT TRC20 Secure Investment Platform</p>
+        </footer>
+    </main>
+</div>
+
+<!-- Change Password Modal -->
+<div id="changePasswordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md animate__animated animate__fadeInDown">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-gray-800">Change Password</h3>
+            <button id="closePasswordModal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="changePasswordForm">
+            <div class="mb-4">
+                <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                <input type="password" id="currentPassword" class="settings-input" placeholder="Enter current password" required>
+            </div>
+            <div class="mb-4">
+                <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <input type="password" id="newPassword" class="settings-input" placeholder="Enter new password" required>
+                <div class="mt-2">
+                    <div class="text-xs text-gray-500">Password strength:</div>
+                    <div class="w-full bg-gray-200 h-2 rounded-full mt-1 overflow-hidden">
+                        <div id="passwordStrength" class="bg-red-500 h-full" style="width: 0%"></div>
+                    </div>
+                    <ul class="text-xs text-gray-500 mt-1 space-y-1">
+                        <li id="lengthCheck" class="flex items-center">
+                            <i class="fas fa-times text-red-500 mr-1"></i> At least 8 characters
+                        </li>
+                        <li id="uppercaseCheck" class="flex items-center">
+                            <i class="fas fa-times text-red-500 mr-1"></i> At least 1 uppercase letter
+                        </li>
+                        <li id="specialCharCheck" class="flex items-center">
+                            <i class="fas fa-times text-red-500 mr-1"></i> At least 1 special character
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mb-6">
+                <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                <input type="password" id="confirmPassword" class="settings-input" placeholder="Confirm new password" required>
+                <p id="passwordMatchMessage" class="text-xs text-red-500 mt-1 hidden">Passwords do not match</p>
+            </div>
+            <div class="flex justify-end">
+                <button type="button" id="cancelPasswordChange" class="settings-btn settings-btn-secondary mr-2">Cancel</button>
+                <button type="submit" id="submitPasswordChange" class="settings-btn settings-btn-primary">Change Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Change PIN Modal -->
+<div id="changePinModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md animate__animated animate__fadeInDown">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-gray-800">Change Withdrawal PIN</h3>
+            <button id="closePinModal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="changePinForm">
+            <div class="mb-4">
+                <label for="currentPin" class="block text-sm font-medium text-gray-700 mb-1">Current PIN</label>
+                <input type="password" id="currentPin" maxlength="6" class="settings-input" placeholder="Enter current PIN" required>
+            </div>
+            <div class="mb-4">
+                <label for="newPin" class="block text-sm font-medium text-gray-700 mb-1">New PIN</label>
+                <input type="password" id="newPin" maxlength="6" class="settings-input" placeholder="Enter 6-digit PIN" required>
+            </div>
+            <div class="mb-6">
+                <label for="confirmPin" class="block text-sm font-medium text-gray-700 mb-1">Confirm New PIN</label>
+                <input type="password" id="confirmPin" maxlength="6" class="settings-input" placeholder="Confirm new PIN" required>
+                <p id="pinMatchMessage" class="text-xs text-red-500 mt-1 hidden">PINs do not match</p>
+            </div>
+            <div class="flex justify-end">
+                <button type="button" id="cancelPinChange" class="settings-btn settings-btn-secondary mr-2">Cancel</button>
+                <button type="submit" id="submitPinChange" class="settings-btn settings-btn-primary">Change PIN</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Cookie Preferences Modal -->
+<div id="cookieModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 w-full max-w-lg animate__animated animate__fadeInDown">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-gray-800">Cookie Preferences</h3>
+            <button id="closeCookieModal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="mb-4">
+            <p class="text-gray-600 text-sm">We use cookies to enhance your experience. Customize your cookie preferences below:</p>
+        </div>
+        <form id="cookiePreferencesForm">
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-gray-700">Essential Cookies</p>
+                        <p class="text-xs text-gray-500">Required for basic website functionality</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked disabled>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-gray-700">Performance Cookies</p>
+                        <p class="text-xs text-gray-500">Help us improve site performance and experience</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="performanceCookiesToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-gray-700">Functionality Cookies</p>
+                        <p class="text-xs text-gray-500">Enable personalized features and preferences</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="functionalityCookiesToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-gray-700">Marketing Cookies</p>
+                        <p class="text-xs text-gray-500">Track your activity for targeted advertising</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="marketingCookiesToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-between">
+                <button type="button" id="rejectAllCookies" class="settings-btn settings-btn-secondary">Reject All</button>
+                <div>
+                    <button type="button" id="acceptAllCookies" class="settings-btn settings-btn-secondary mr-2">Accept All</button>
+                    <button type="submit" id="saveCookiePreferences" class="settings-btn settings-btn-primary">Save Preferences</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="editProfileModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 w-full max-w-lg animate__animated animate__fadeInDown">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-gray-800">Edit Profile</h3>
+            <button id="closeProfileModal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="editProfileForm">
+            <div class="mb-6 flex justify-center">
+                <div class="relative">
+                    <img id="profilePreview" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Profile Picture" class="profile-picture">
+                    <label for="profilePictureUploadModal" class="profile-upload-btn">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" id="profilePictureUploadModal" accept="image/*" class="hidden">
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input type="text" id="fullName" class="settings-input" placeholder="Enter your full name">
+            </div>
+            
+            <div class="mb-4">
+                <label for="profileEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <input type="email" id="profileEmail" class="settings-input" placeholder="Enter your email">
+            </div>
+            
+            <div class="mb-4">
+                <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <input type="tel" id="phoneNumber" class="settings-input" placeholder="Enter your phone number">
+            </div>
+            
+            <div class="mb-6">
+                <label for="userBio" class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                <textarea id="userBio" class="settings-input" rows="3" placeholder="Tell us about yourself"></textarea>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label for="country" class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                    <div class="custom-select w-full">
+                        <select id="country" class="settings-input">
+                            <option value="">Select Country</option>
+                            <option value="us">United States</option>
+                            <option value="ca">Canada</option>
+                            <option value="uk">United Kingdom</option>
+                            <option value="au">Australia</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label for="timezone" class="block text-sm font-medium text-gray-700 mb-1">Timezone</label>
+                    <div class="custom-select w-full">
+                        <select id="timezone" class="settings-input">
+                            <option value="">Select Timezone</option>
+                            <option value="gmt-8">Pacific Time (GMT-8)</option>
+                            <option value="gmt-5">Eastern Time (GMT-5)</option>
+                            <option value="gmt+0">GMT</option>
+                            <option value="gmt+1">Central European Time (GMT+1)</option>
+                            <option value="gmt+8">China Standard Time (GMT+8)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-200 pt-4 mb-4">
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Privacy Settings</h4>
+                
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <p class="font-medium text-gray-700 text-sm">Show Email</p>
+                        <p class="text-xs text-gray-500">Allow other users to see your email</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="showEmailToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-gray-700 text-sm">Public Profile</p>
+                        <p class="text-xs text-gray-500">Make your profile visible to everyone</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="publicProfileToggleModal">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="flex justify-end">
+                <button type="button" id="cancelProfileEdit" class="settings-btn settings-btn-secondary mr-2">Cancel</button>
+                <button type="submit" id="saveProfileChanges" class="settings-btn settings-btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="js/settings.js"></script>
+<script>
+// Sidebar toggle for mobile
+const sidebar = document.getElementById('sidebar');
+const sidebarOpen = document.getElementById('sidebarOpen');
+const sidebarClose = document.getElementById('sidebarClose');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const mainContent = document.querySelector('main');
+
+function openSidebar() {
+    sidebar.classList.remove('-translate-x-full');
+    sidebarOverlay.classList.remove('hidden');
+    sidebarOverlay.classList.add('opacity-100');
+}
+
+function closeSidebar() {
+    sidebar.classList.add('-translate-x-full');
+    sidebarOverlay.classList.remove('opacity-100');
+    sidebarOverlay.classList.add('hidden');
+}
+
+if (sidebarOpen) {
+    sidebarOpen.onclick = openSidebar;
+}
+if (sidebarClose) {
+    sidebarClose.onclick = closeSidebar;
+}
+if (sidebarOverlay) {
+    sidebarOverlay.onclick = closeSidebar;
+}
+
+// Additional functionality is handled in settings.js
+</script>
+</body>
+</html>

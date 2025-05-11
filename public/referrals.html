@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Referrals | QuantumFX</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #4f46e5;
+            --accent-color: #8b5cf6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+        
+        body {
+            background-color: #f8fafc;
+            font-family: 'Poppins', sans-serif;
+            color: #1f2937;
+        }
+        
+        .gradient-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar {
+            height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                position: relative;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .status-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-approved {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-rejected {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+        
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .tab-button.active {
+            background-color: #6366f1;
+            color: white;
+        }
+        
+        .tab-button:not(.active):hover {
+            background-color: #e0e7ff;
+        }
+        
+        .referral-link-container {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .referral-link-container::before {
+            content: "";
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.1);
+            z-index: 0;
+        }
+        
+        .referral-link-input {
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            width: 100%;
+            font-size: 0.9rem;
+            color: #4b5563;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        
+        .btn-copy {
+            background: linear-gradient(45deg, #6366f1, #4f46e5);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+        }
+        
+        .btn-copy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px -1px rgba(99, 102, 241, 0.3);
+            background: linear-gradient(45deg, #4f46e5, #4338ca);
+        }
+        
+        .btn-share {
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            color: #4b5563;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin-right: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-share:hover {
+            background-color: #f9fafb;
+            color: #6366f1;
+            border-color: #6366f1;
+        }
+        
+        .referral-stat-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .referral-stat-card::after {
+            content: "";
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            z-index: 0;
+        }
+        
+        .referral-stat-card.primary::after {
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .referral-stat-card.success::after {
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .referral-stat-card.warning::after {
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .referral-stat-card.info::after {
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .referral-stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .referral-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .referral-stat-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .commission-card {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .commission-card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .commission-card-body {
+            padding: 1.5rem;
+        }
+        
+        .commission-level {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .commission-level:hover {
+            background-color: #f9fafb;
+        }
+        
+        .commission-level-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .commission-level-1 {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+        
+        .commission-level-2 {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .commission-level-3 {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .commission-percent {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            border-radius: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+        
+        .referral-table th {
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .referral-table td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+        }
+        
+        .referral-table tbody tr {
+            transition: all 0.2s ease;
+        }
+        
+        .referral-table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #1f2937;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 0.5rem;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .how-it-works-step {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+        
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #e0e7ff;
+            color: #4f46e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex-grow: 1;
+        }
+        
+        .step-heading {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .step-description {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .empty-referrals {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        
+        .empty-icon {
+            font-size: 3rem;
+            color: #d1d5db;
+            margin-bottom: 1rem;
+        }
+        
+        .earn-more-text {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .info-tooltip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background-color: #e5e7eb;
+            color: #6b7280;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+            cursor: pointer;
+        }
+        
+        .info-tooltip:hover {
+            background-color: #d1d5db;
+            color: #4b5563;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #d1fae5;
+            color: #065f46;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            z-index: 50;
+            transition: all 0.3s ease;
+            transform: translateY(100px);
+            opacity: 0;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .notification-icon {
+            margin-right: 0.75rem;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .qr-code {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto;
+        }
+        
+        .social-share-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        
+        /* Chart styles */
+        .chart-container {
+            position: relative;
+            height: 240px;
+            width: 100%;
+        }
+        
+        .stats-heading {
+            font-weight: 600;
+            color: #4b5563;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 1rem;
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="bg-indigo-900 text-white w-64 fixed inset-y-0 left-0 z-40 transform -translate-x-full md:translate-x-0 p-4 flex flex-col shadow-lg">
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center">
+                <h2 class="text-2xl font-bold">QuantumFX<span class="text-yellow-400">Pro</span></h2>
+                <p class="text-xs text-indigo-200">AI Driven</p>
+            </div>
+            <button id="sidebarClose" class="md:hidden text-2xl text-indigo-200 hover:text-white"><i class="fas fa-times"></i></button>
+        </div>
+        <nav class="space-y-1 px-2">
+                <a href="dashboard.html" class="flex items-center px-4 py-3 bg-indigo-800 rounded-lg text-white">
+                    <i class="fas fa-chart-line w-5 mr-3 text-center"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="investment.html" class="flex items-center px-4 py-3 hover:bg-indigo-800 rounded-lg transition duration-200">
+                    <i class="fas fa-coins w-5 mr-3 text-center"></i>
+                    <span>Investments</span>
+                </a>
+                <a href="wallet.html" class="flex items-center px-4 py-3 hover:bg-indigo-800 rounded-lg transition duration-200">
+                    <i class="fas fa-wallet w-5 mr-3 text-center"></i>
+                    <span>Wallet</span>
+                </a>
+                <a href="referrals.html" class="flex items-center px-4 py-3 hover:bg-indigo-800 rounded-lg transition duration-200">
+                    <i class="fas fa-users w-5 mr-3 text-center"></i>
+                    <span>Referrals</span>
+                </a>
+                <a href="settings.html" class="flex items-center px-4 py-3 hover:bg-indigo-800 rounded-lg transition duration-200">
+                    <i class="fas fa-cog w-5 mr-3 text-center"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+        <div class="mt-auto pt-6">
+            <a href="auth.html" class="flex items-center px-4 py-3 text-red-300 hover:bg-indigo-800 rounded-lg transition duration-200">
+                <i class="fas fa-sign-out-alt w-5 mr-3 text-center"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+        <!-- Overlay for mobile -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
+
+        <!-- Main Content -->
+        <main class="flex-1 md:ml-64 p-6 overflow-y-auto">
+            <!-- Top Navigation Bar -->
+            <header class="bg-white/80 backdrop-blur-sm rounded-lg shadow-sm p-4 mb-6 flex justify-between items-center sticky top-0 z-10">
+                <div class="flex items-center">
+                    <button id="openSidebar" class="md:hidden mr-4 text-gray-500 hover:text-indigo-600">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="text-xl font-bold text-gray-800">Referral Program</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button id="notificationButton" class="p-2 bg-gray-100 rounded-full hover:bg-gray-200 relative">
+                            <i class="fas fa-bell text-gray-600"></i>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">2</span>
+                        </button>
+                    </div>
+                    
+                    
+                </div>
+            </header>
+
+            <!-- Tabs -->
+            <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                <div class="flex flex-wrap gap-2">
+                    <button class="tab-button active" data-tab="overview">
+                        <i class="fas fa-home mr-2"></i> Overview
+                    </button>
+                    <button class="tab-button" data-tab="my-referrals">
+                        <i class="fas fa-users mr-2"></i> My Referrals
+                    </button>
+                    <button class="tab-button" data-tab="commissions">
+                        <i class="fas fa-dollar-sign mr-2"></i> Commissions
+                    </button>
+                    <button class="tab-button" data-tab="how-it-works">
+                        <i class="fas fa-question-circle mr-2"></i> How It Works
+                    </button>
+                </div>
+            </div>
+
+            <!-- Overview Tab Content -->
+            <div id="overview" class="tab-content animate-fade-in">
+                <!-- Referral Link Section -->
+                <div class="mb-8">
+                    <div class="referral-link-container mb-6">
+                        <h2 class="text-lg font-semibold mb-4">Your Referral Link</h2>
+                        <p class="text-gray-600 text-sm mb-4">Share this link with friends to earn commissions when they invest</p>
+                        
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1">
+                                <input type="text" class="referral-link-input" value="https://quantumfx.io/ref/johndoe123" readonly id="referralLink">
+                            </div>
+                            <div>
+                                <button class="btn-copy" id="copyLinkBtn">
+                                    <i class="fas fa-copy mr-2"></i> Copy Link
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <p class="text-gray-500 text-sm mb-2">Or share directly:</p>
+                            <div class="social-share-container">
+                                <button class="btn-share" data-platform="whatsapp">
+                                    <i class="fab fa-whatsapp text-green-500"></i>
+                                </button>
+                                <button class="btn-share" data-platform="telegram">
+                                    <i class="fab fa-telegram-plane text-blue-500"></i>
+                                </button>
+                                <button class="btn-share" data-platform="twitter">
+                                    <i class="fab fa-twitter text-blue-400"></i>
+                                </button>
+                                <button class="btn-share" data-platform="facebook">
+                                    <i class="fab fa-facebook-f text-blue-600"></i>
+                                </button>
+                                <button class="btn-share" data-platform="linkedin">
+                                    <i class="fab fa-linkedin-in text-blue-700"></i>
+                                </button>
+                                <button class="btn-share" data-platform="email">
+                                    <i class="fas fa-envelope text-gray-500"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Milestone Progress Section -->
+                    <div class="card p-6 mb-6 border-2 border-indigo-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-lg font-semibold text-indigo-800">
+                                <i class="fas fa-trophy text-yellow-500 mr-2"></i> Referral Milestone
+                            </h3>
+                            <div class="tooltip-container">
+                                <div class="info-tooltip">
+                                    <i class="fas fa-info"></i>
+                                </div>
+                                <span class="tooltip-text">Reach 25 active referrals to earn a $500 bonus reward!</span>
+                            </div>
+                        </div>
+                        
+                        <p class="text-sm text-gray-600 mb-4">Reach 25 active (paying) referrals to earn a special $500 reward</p>
+                        
+                        <div class="relative pt-1 mb-4">
+                            <div class="flex mb-2 items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full bg-indigo-100 text-indigo-800">
+                                        Milestone Progress
+                                    </span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs font-semibold inline-block text-indigo-800" id="milestoneProgressText">
+                                        8/25
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-gray-200">
+                                <div id="milestoneProgress" class="bg-blue-500 transition-all duration-500 ease-out" style="width:32%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500">
+                                <span>0</span>
+                                <span>25 Referrals</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <div id="milestoneStatus">
+                                <span class="text-blue-600">
+                                    <i class="fas fa-info-circle mr-1"></i> 17 more active referrals needed
+                                </span>
+                            </div>
+                            <button id="milestoneReward" class="hidden px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 animate-pulse flex items-center">
+                                <i class="fas fa-gift mr-2"></i> Claim $250 Reward
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <!-- Referral Stats -->
+                        <div class="referral-stat-card primary">
+                            <div class="referral-stat-icon bg-indigo-100 text-indigo-600">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="referral-stat-value" id="totalReferrals">0</div>
+                            <div class="referral-stat-label">Total Referrals</div>
+                        </div>
+                        
+                        <div class="referral-stat-card success">
+                            <div class="referral-stat-icon bg-green-100 text-green-600">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="referral-stat-value" id="activeReferrals">0</div>
+                            <div class="referral-stat-label">Active Referrals</div>
+                        </div>
+                        
+                        <div class="referral-stat-card warning">
+                            <div class="referral-stat-icon bg-yellow-100 text-yellow-600">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="referral-stat-value" id="totalEarnings">$0.00</div>
+                            <div class="referral-stat-label">Total Earnings</div>
+                        </div>
+                        
+                        <div class="referral-stat-card info">
+                            <div class="referral-stat-icon bg-blue-100 text-blue-600">
+                                <i class="fas fa-arrow-trend-up"></i>
+                            </div>
+                            <div class="referral-stat-value" id="pendingCommissions">$0.00</div>
+                            <div class="referral-stat-label">Pending Commissions</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Commission Structure -->
+                <div class="commission-card mb-8">
+                    <div class="commission-card-header">
+                        <h2 class="text-lg font-semibold">3-Level Commission Structure</h2>
+                        <div class="tooltip-container">
+                            <div class="info-tooltip">
+                                <i class="fas fa-info"></i>
+                            </div>
+                            <span class="tooltip-text">Earn commissions from your direct referrals and their referrals up to 3 levels deep</span>
+                        </div>
+                    </div>
+                    <div class="commission-card-body">
+                        <div class="commission-level">
+                            <div class="commission-level-icon commission-level-1">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium">1st Level (Direct Referrals)</h3>
+                                <p class="text-sm text-gray-500">When someone you refer makes a deposit</p>
+                            </div>
+                            <div class="commission-percent">5%</div>
+                        </div>
+                        
+                        <div class="commission-level">
+                            <div class="commission-level-icon commission-level-2">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium">2nd Level</h3>
+                                <p class="text-sm text-gray-500">When your referral's referral makes a deposit</p>
+                            </div>
+                            <div class="commission-percent">2%</div>
+                        </div>
+                        
+                        <div class="commission-level">
+                            <div class="commission-level-icon commission-level-3">
+                                <i class="fas fa-user-friends"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium">3rd Level</h3>
+                                <p class="text-sm text-gray-500">When your referral's referral's referral makes a deposit</p>
+                            </div>
+                            <div class="commission-percent">1%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card p-5">
+                        <h2 class="stats-heading">Referrals by Level</h2>
+                        <div class="chart-container">
+                            <canvas id="referralsChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card p-5">
+                        <h2 class="stats-heading">Commission Breakdown</h2>
+                        <div class="chart-container">
+                            <canvas id="commissionsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- My Referrals Tab Content -->
+            <div id="my-referrals" class="tab-content hidden animate-fade-in">
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold mb-2">My Referrals</h2>
+                    <p class="text-sm text-gray-600">View all the users you've referred and their performance</p>
+                </div>
+                
+                <div class="card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full referral-table">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-6 py-3 text-left">User</th>
+                                    <th class="px-6 py-3 text-left">Joined</th>
+                                    <th class="px-6 py-3 text-left">Level</th>
+                                    <th class="px-6 py-3 text-left">Deposits</th>
+                                    <th class="px-6 py-3 text-left">Commission Earned</th>
+                                    <th class="px-6 py-3 text-left">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="referralsTableBody">
+                                <!-- Referrals will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="empty-referrals hidden" id="emptyReferrals">
+                        <div class="empty-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-700 mb-2">No Referrals Yet</h3>
+                        <p class="text-gray-500 max-w-md mx-auto mb-4">Share your referral link with friends and earn commissions when they invest.</p>
+                        <button class="btn-copy" id="shareFromEmpty">
+                            <i class="fas fa-share-alt mr-2"></i> Share Your Link
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Commissions Tab Content -->
+            <div id="commissions" class="tab-content hidden animate-fade-in">
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold mb-2">Commission History</h2>
+                    <p class="text-sm text-gray-600">Track all the commissions you've earned from your referrals</p>
+                </div>
+                
+                <div class="card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full referral-table">
+                            <thead class="bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-6 py-3 text-left">Date</th>
+                                    <th class="px-6 py-3 text-left">Referral</th>
+                                    <th class="px-6 py-3 text-left">Level</th>
+                                    <th class="px-6 py-3 text-left">Deposit Amount</th>
+                                    <th class="px-6 py-3 text-left">Commission</th>
+                                    <th class="px-6 py-3 text-left">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="commissionsTableBody">
+                                <!-- Commissions will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="empty-referrals hidden" id="emptyCommissions">
+                        <div class="empty-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-700 mb-2">No Commissions Yet</h3>
+                        <p class="text-gray-500 max-w-md mx-auto mb-4">When your referrals make deposits, your commissions will appear here.</p>
+                        <button class="btn-copy" id="shareFromCommissions">
+                            <i class="fas fa-share-alt mr-2"></i> Share Your Link
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- How It Works Tab Content -->
+            <div id="how-it-works" class="tab-content hidden animate-fade-in">
+                <div class="mb-8">
+                    <h2 class="text-lg font-semibold mb-4">How the Referral Program Works</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <div class="card p-6">
+                                <h3 class="text-md font-semibold mb-4">Step by Step Guide</h3>
+                                
+                                <div class="how-it-works-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <h4 class="step-heading">Share Your Referral Link</h4>
+                                        <p class="step-description">Copy your unique referral link and share it with friends, on social media, or in your network.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="how-it-works-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <h4 class="step-heading">Friends Join & Invest</h4>
+                                        <p class="step-description">When someone clicks your link and creates an account, they become your referral. When they make a deposit, you earn a commission.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="how-it-works-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <h4 class="step-heading">Multi-Level Earnings</h4>
+                                        <p class="step-description">Earn commissions not just from your direct referrals, but also from their referrals (up to 3 levels deep).</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="how-it-works-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <h4 class="step-heading">Get Paid Instantly</h4>
+                                        <p class="step-description">Commissions are added to your wallet balance automatically and can be withdrawn anytime.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="card p-6 mb-6">
+                                <h3 class="text-md font-semibold mb-4">3-Level Commission Structure</h3>
+                                
+                                <div class="mb-4">
+                                    <p class="mb-2"><strong>Example Scenario:</strong></p>
+                                    <p class="text-sm text-gray-600 mb-4">Let's say you refer User B who deposits 1,000 USDT:</p>
+                                    
+                                    <ul class="list-disc pl-5 space-y-2 text-sm text-gray-600">
+                                        <li><strong>You earn:</strong> 50 USDT (5% of 1,000 USDT)</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <p class="text-sm text-gray-600 mb-4">Then User B refers User C who deposits 1,000 USDT:</p>
+                                    
+                                    <ul class="list-disc pl-5 space-y-2 text-sm text-gray-600">
+                                        <li><strong>User B earns:</strong> 50 USDT (5% of 1,000 USDT)</li>
+                                        <li><strong>You earn:</strong> 20 USDT (2% of 1,000 USDT)</li>
+                                    </ul>
+                                </div>
+                                
+                                <div>
+                                    <p class="text-sm text-gray-600 mb-4">Finally, User C refers User D who deposits 1,000 USDT:</p>
+                                    
+                                    <ul class="list-disc pl-5 space-y-2 text-sm text-gray-600">
+                                        <li><strong>User C earns:</strong> 50 USDT (5% of 1,000 USDT)</li>
+                                        <li><strong>User B earns:</strong> 20 USDT (2% of 1,000 USDT)</li>
+                                        <li><strong>You earn:</strong> 10 USDT (1% of 1,000 USDT)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="card p-6">
+                                <h3 class="text-md font-semibold mb-4">Tips for Successful Referrals</h3>
+                                
+                                <ul class="list-disc pl-5 space-y-3 text-sm text-gray-600">
+                                    <li>Share your link with people who are genuinely interested in investing</li>
+                                    <li>Explain the benefits of the platform and your own positive experience</li>
+                                    <li>Use social media, forums, and investment communities to find potential referrals</li>
+                                    <li>Follow up with your referrals to ensure they complete the registration and deposit process</li>
+                                    <li>Create content like blog posts, videos or reviews to attract more referrals</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Link copied notification -->
+            <div id="notification" class="notification">
+                <div class="notification-icon">
+                    <i class="fas fa-check-circle text-green-600"></i>
+                </div>
+                <div>Referral link copied to clipboard!</div>
+            </div>
+            
+            <!-- Confetti animation container for milestone celebration -->
+            <div id="confetti" class="fixed inset-0 z-50 pointer-events-none hidden">
+                <div class="absolute inset-0 overflow-hidden">
+                    <canvas id="confettiCanvas" class="w-full h-full"></canvas>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="text-center text-gray-500 text-sm mt-10 pb-6">
+                <p>&copy; 2025 QuantumFX Pro. All rights reserved.</p>
+                <p class="mt-1">Secure Investment Platform</p>
+            </footer>
+        </main>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/referrals.js"></script>
+</body>
+</html>

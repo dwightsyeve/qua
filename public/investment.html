@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investments | QuantumFX</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #4f46e5;
+            --accent-color: #8b5cf6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+        
+        body {
+            background-color: #f8fafc;
+            font-family: 'Poppins', sans-serif;
+            color: #1f2937;
+        }
+        
+        .gradient-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar {
+            height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                height: auto;
+                position: relative;
+            }
+        }
+        
+        .status-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-approved {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-rejected {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+        
+        .status-completed {
+            background-color: #e0e7ff;
+            color: #3730a3;
+        }
+        
+        .investment-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .investment-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .investment-card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .investment-card-body {
+            padding: 1.5rem;
+        }
+        
+        .investment-card-footer {
+            padding: 1.25rem 1.5rem;
+            background-color: #f9fafb;
+            border-top: 1px solid #f3f4f6;
+        }
+        
+        .plan-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-color: #cbd5e1;
+        }
+        
+        .plan-card.starter-plan {
+            background: linear-gradient(135deg, #ffffff, #f0f9ff);
+        }
+        
+        .plan-card.premium-plan {
+            background: linear-gradient(135deg, #ffffff, #f0fdfa);
+            border: 1px solid #10b981;
+        }
+        
+        .plan-card.vip-plan {
+            background: linear-gradient(135deg, #ffffff, #eff6ff);
+        }
+        
+        .plan-card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .plan-card-body {
+            padding: 1.5rem;
+        }
+        
+        .plan-card-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            background-color: rgba(249, 250, 251, 0.7);
+        }
+        
+        .plan-feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .plan-feature i {
+            color: #10b981;
+            margin-right: 0.75rem;
+        }
+        
+        .plan-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background-color: #dbeafe;
+            color: #1e40af;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .premium-badge {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .vip-badge {
+            background: linear-gradient(45deg, #6366f1, #4f46e5);
+            color: white;
+        }
+        
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .tab-button.active {
+            background-color: #6366f1;
+            color: white;
+        }
+        
+        .tab-button:not(.active):hover {
+            background-color: #e0e7ff;
+        }
+        
+        .progress-container {
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            height: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 1s ease;
+        }
+        
+        .investment-action-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background-color: #6366f1;
+            color: white;
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background-color: #4f46e5;
+        }
+        
+        /* Modal Styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none; /* Changed from flex to none by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* Increased z-index to ensure it displays above everything */
+        }
+        
+        /* Add this class to make modal visible */
+        .modal-backdrop.show {
+            display: flex !important;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalFadeIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes modalFadeIn {
+            0% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex flex-col md:flex-row min-h-screen">
+            <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="bg-indigo-900 text-white w-64 fixed inset-y-0 left-0 z-30 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+            <div class="flex justify-between items-center p-4">
+                <div>
+                    <h2 class="text-2xl font-bold">Quantum<span class="text-yellow-400">FX</span></h2>
+                    <p class="text-xs text-indigo-200">AI Driven Investment</p>
+                </div>
+                <button id="closeSidebar" class="md:hidden text-white focus:outline-none">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            
+            
+            
+            <nav class="space-y-1 px-2">
+                <a href="dashboard.html" class="flex items-center px-4 py-3 bg-indigo-800 rounded-lg text-white">
+                    <i class="fas fa-chart-line w-5 mr-3 text-center"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="investment.html" class="flex items-center px-4 py-3 hover:bg-indigo-800 rounded-lg transition duration-200">
+                    <i class="fas fa-coins w-5 mr-3 text-center"></i>
+                    <span>Investments</span>
+                </a>
+                <a href="wallet.html" class="flex items-center px-4 py-3 hover:bg-indigo-800 rounded-lg transition duration-200">
+                    <i class="fas fa-wallet w-5 mr-3 text-center"></i>
+                    <span>Wallet</span>
+                </a>
+                <a href="referrals.html" class="flex items-center px-4 py-3 hover:bg-indigo-800 rounded-lg transition duration-200">
+                    <i class="fas fa-users w-5 mr-3 text-center"></i>
+                    <span>Referrals</span>
+                </a>
+                <a href="settings.html" class="flex items-center px-4 py-3 hover:bg-indigo-800 rounded-lg transition duration-200">
+                    <i class="fas fa-cog w-5 mr-3 text-center"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            
+            <div class="absolute bottom-0 w-full p-4">
+                <button id="logoutButton" class="flex items-center w-full px-4 py-3 text-red-300 hover:bg-indigo-800 rounded-lg transition duration-200">
+                    <i class="fas fa-sign-out-alt w-5 mr-3 text-center"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Overlay for mobile -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
+
+        <!-- Main Content -->
+        <main class="flex-1 md:ml-64 p-6 overflow-y-auto">
+            <!-- Top Navigation Bar -->
+            <header class="bg-white/80 backdrop-blur-sm rounded-lg shadow-sm p-4 mb-6 flex justify-between items-center sticky top-0 z-10">
+                <div class="flex items-center">
+                    <button id="openSidebar" class="md:hidden mr-4 text-gray-500 hover:text-indigo-600">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="text-xl font-bold text-gray-800">Investment Plans</h1>
+                </div>
+                
+            </header>
+
+            <!-- Tabs -->
+            <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                <div class="flex flex-wrap gap-2">
+                    <button class="tab-button active" data-tab="investment-plans">
+                        <i class="fas fa-award mr-2"></i> Investment Plans
+                    </button>
+                    <button class="tab-button" data-tab="active-investments">
+                        <i class="fas fa-chart-pie mr-2"></i> Active Investments
+                    </button>
+                    <button class="tab-button" data-tab="investment-history">
+                        <i class="fas fa-history mr-2"></i> Investment History
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Investment Plans Tab Content -->
+            <div id="investment-plans" class="tab-content">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-2">Choose Your Investment Plan</h2>
+                    <p class="text-gray-600">Select the plan that best fits your investment strategy and goals.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Starter Plan -->
+                    <div class="plan-card starter-plan">
+                        <div class="plan-card-header">
+                            <span class="plan-badge">Starter</span>
+                            <h3 class="text-xl font-bold text-gray-800">Starter Plan</h3>
+                            <p class="text-gray-500 text-sm">Perfect for beginners</p>
+                        </div>
+                        <div class="plan-card-body">
+                            <div class="mb-4">
+                                <span class="text-3xl font-bold text-indigo-600">2.0%</span>
+                                <span class="text-gray-600">/ Daily ROI</span>
+                            </div>
+                            <div class="mb-6">
+                                <span class="bg-indigo-100 text-indigo-800 text-sm font-medium px-2.5 py-0.5 rounded">50-Day Program</span>
+                            </div>
+                            <ul class="mb-6 space-y-3">
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Min. Deposit: 50 USDT</span>
+                                </li>
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Max. Deposit: 1,000 USDT</span>
+                                </li>
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Total Return: 200%</span>
+                                </li>
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Capital Returned: Yes</span>
+                                </li>
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Instant Withdrawal</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="plan-card-footer">
+                            <a href="investnow.html?plan=starter" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition duration-200 flex items-center justify-center">
+                                <i class="fas fa-arrow-right mr-2"></i> Invest Now
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Premium Plan -->
+                    <div class="plan-card premium-plan">
+                        <div class="plan-card-header">
+                            <span class="plan-badge premium-badge">Premium</span>
+                            <h3 class="text-xl font-bold text-gray-800">Premium Plan</h3>
+                            <p class="text-gray-500 text-sm">Most popular choice</p>
+                        </div>
+                        <div class="plan-card-body">
+                            <div class="mb-4">
+                                <span class="text-3xl font-bold text-green-600">2.5%</span>
+                                <span class="text-gray-600">/ Daily ROI</span>
+                            </div>
+                            <div class="mb-6">
+                                <span class="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded">40-Day Program</span>
+                            </div>
+                            <ul class="mb-6 space-y-3">
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Min. Deposit: 1,001 USDT</span>
+                                </li>
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Max. Deposit: 5,000 USDT</span>
+                                </li>
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Total Return: 200%</span>
+                                </li>
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Capital Returned: Yes</span>
+                                </li>
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Priority Support</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="plan-card-footer">
+                            <a href="investnow.html?plan=premium" class="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition duration-200 flex items-center justify-center">
+                                <i class="fas fa-arrow-right mr-2"></i> Invest Now
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- VIP Plan -->
+                    <div class="plan-card vip-plan">
+                        <div class="plan-card-header">
+                            <span class="plan-badge vip-badge">VIP</span>
+                            <h3 class="text-xl font-bold text-gray-800">VIP Plan</h3>
+                            <p class="text-gray-500 text-sm">For serious investors</p>
+                        </div>
+                        <div class="plan-card-body">
+                            <div class="mb-4">
+                                <span class="text-3xl font-bold text-indigo-600">3.0%</span>
+                                <span class="text-gray-600">/ Daily ROI</span>
+                            </div>
+                            <div class="mb-6">
+                                <span class="bg-indigo-100 text-indigo-800 text-sm font-medium px-2.5 py-0.5 rounded">33-Day Program</span>
+                            </div>
+                            <ul class="mb-6 space-y-3">
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Min. Deposit: 5,001 USDT</span>
+                                </li>
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Max. Deposit: Unlimited</span>
+                                </li>
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Total Return: 200%</span>
+                                </li>
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Capital Returned: Yes</span>
+                                </li>
+                                <li class="plan-feature">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Dedicated Account Manager</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="plan-card-footer">
+                            <a href="investnow.html?plan=vip" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition duration-200 flex items-center justify-center">
+                                <i class="fas fa-arrow-right mr-2"></i> Invest Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 mb-6 bg-yellow-50 p-4 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-lightbulb text-yellow-500 mt-1"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="font-medium text-yellow-800">Investment Tips</h3>
+                            <p class="text-sm text-yellow-700">Diversify your investments across different plans to balance risk and return. Always invest funds you can afford to commit for the full investment period.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Active Investments Tab Content -->
+            <div id="active-investments" class="tab-content hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-2">Your Active Investments</h2>
+                    <p class="text-gray-600">Track the performance of your current investments.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 gap-6" id="activeInvestmentsContainer">
+                    <!-- Active investments will be loaded here -->
+                </div>
+                
+                <div id="noActiveInvestments" class="text-center py-12">
+                    <div class="mb-4">
+                        <i class="fas fa-chart-line text-gray-300 text-5xl"></i>
+                    </div>
+                    <h3 class="text-xl font-medium text-gray-600 mb-2">No Active Investments</h3>
+                    <p class="text-gray-500 mb-6">You don't have any active investments at the moment.</p>
+                    <button class="tab-button active bg-indigo-600 text-white hover:bg-indigo-700" onclick="switchTab('investment-plans')">
+                        <i class="fas fa-plus-circle mr-2"></i> Start Investing Now
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Investment History Tab Content -->
+            <div id="investment-history" class="tab-content hidden">
+                <div class="mb-6">
+                    <h2 class="text-xl font-semibold mb-2">Investment History</h2>
+                    <p class="text-gray-600">A record of all your completed and cancelled investments.</p>
+                </div>
+                
+                <div class="overflow-x-auto bg-white rounded-lg shadow">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Return</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="investmentHistoryTableBody">
+                            <!-- Investment history will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="noInvestmentHistory" class="text-center py-12 hidden">
+                    <div class="mb-4">
+                        <i class="fas fa-history text-gray-300 text-5xl"></i>
+                    </div>
+                    <h3 class="text-xl font-medium text-gray-600 mb-2">No Investment History</h3>
+                    <p class="text-gray-500">You haven't completed any investments yet.</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="text-center text-gray-500 text-sm mt-10 pb-6">
+                <p>&copy; 2025 QuantumFX Pro. All rights reserved.</p>
+                <p class="mt-1">Secure Investment Platform</p>
+            </footer>
+        </main>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <!-- Add the modal container -->
+    <div id="modal-container"></div>
+    <!-- Load the investment modal script before the main investments.js file -->
+    <script src="js/investmentModal.js"></script>
+    <script src="js/investments.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/depowth.js"></script>
+</body>
+</html>
