@@ -30,7 +30,7 @@ exports.getReferralLink = (req, res) => {
     
     // Generate frontend URL based on environment
     const baseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://quantumfx.io/signup' 
+      ? 'https://qua-vagw.onrender.com' 
       : 'http://localhost:3000/auth.html';
     
     const referralLink = `${baseUrl}?ref=${user.referralCode}`;
