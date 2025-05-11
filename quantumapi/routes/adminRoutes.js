@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken, isAdmin } = require('../middleware/authmiddleware');
-const adminController = require('../controller/AdminController');
+const adminController = require('../controller/adminController');
 const walletController = require('../controller/WalletController');
 
 // Token verification endpoint - simple endpoint that just validates if the token is still valid
