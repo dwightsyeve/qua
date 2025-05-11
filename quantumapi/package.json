@@ -23,7 +23,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "npm i"
+    "build": "npm i && npm rebuild better-sqlite3 --build-from-source"
   },
   "author": "",
   "license": "ISC",
