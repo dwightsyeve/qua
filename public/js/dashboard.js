@@ -1190,6 +1190,7 @@ function updateReferralChart(referralData) {
     }
 }
 
+
 /**
  * Update last updated timestamp
  */
@@ -1200,3 +1201,27 @@ function updateLastUpdated() {
         lastUpdatedElement.textContent = `Last updated: ${now.toLocaleString()}`;
     }
 }
+
+// IMMEDIATE FIX - Add this to the end of your file
+(function() {
+  // Get user data directly from the dashboard API response
+  const userData = JSON.parse(sessionStorage.getItem('userData'));
+  
+  if (userData && userData.user) {
+    // First approach - direct DOM manipulation
+    const nameElement = document.querySelector('h3.text-center.font-semibold');
+    const levelElement = document.querySelector('.text-center.text-xs.text-indigo-300');
+    const avatarElement = document.querySelector('.rounded-full');
+    
+    if (nameElement) nameElement.textContent = userData.user.name || 'User';
+    if (levelElement) levelElement.textContent = userData.user.level || 'Standard';
+    if (avatarElement) {
+      const formattedName = encodeURIComponent(userData.user.name || 'User');
+      avatarElement.src = `https://ui-avatars.com/api/?name=${formattedName}&background=6366f1&color=fff`;
+    }
+    
+    console.log('User info updated with:', userData.user.name);
+  } else {
+    console.warn('No user data found in sessionStorage');
+  }
+})();
