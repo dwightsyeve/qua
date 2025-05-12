@@ -46,13 +46,19 @@ class User {
         `).run();
       }
 
-  static findByEmail(email) {
-    return db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-  }
+ static findByEmail(email) {
+  return db.prepare(`
+    SELECT * FROM users 
+    WHERE LOWER(email) = LOWER(?)
+  `).get(email);
+}
 
-  static findByUsername(username) {
-    return db.prepare('SELECT * FROM users WHERE username = ?').get(username);
-  }
+static findByUsername(username) {
+  return db.prepare(`
+    SELECT * FROM users 
+    WHERE LOWER(username) = LOWER(?)
+  `).get(username);
+}
 
   static findByVerificationToken(token) {
     return db.prepare('SELECT * FROM users WHERE verificationToken = ?').get(token);
