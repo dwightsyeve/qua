@@ -274,27 +274,34 @@ async function deleteNotification(notificationId) {
  * @param {Object} user - User information
  */
 function updateUserInfo(user) {
+    // Update avatar with correct user name
     const avatarElement = document.querySelector('.rounded-full');
-    if (avatarElement && user.avatar) {
-        avatarElement.src = user.avatar;
-    } else if (avatarElement && user.name) {
-        avatarElement.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=6366f1&color=fff`;
+    if (avatarElement) {
+        // Use the actual user name for the avatar
+        const formattedName = encodeURIComponent(user.name || 'User');
+        avatarElement.src = `https://ui-avatars.com/api/?name=${formattedName}&background=6366f1&color=fff`;
     }
     
-    // FIX: Use a more specific selector that will actually find the h3 element
+    // Update user name text
     const nameElement = document.querySelector('h3.text-center.font-semibold');
     if (nameElement) {
         nameElement.textContent = user.name || 'User';
     }
     
+    // Update user level/role text
     const levelElement = document.querySelector('.text-center.text-xs.text-indigo-300');
     if (levelElement) {
-        levelElement.textContent = user.level || 'Premium Investor';
+        levelElement.textContent = user.level || 'Standard Investor';
     }
     
-    const verificationBadge = document.querySelector('.status-badge.status-approved');
-    if (verificationBadge) {
-        verificationBadge.style.display = user.isVerified ? 'inline-flex' : 'none';
+    // Update verification status if needed
+    const verificationElement = document.querySelector('.status-badge.status-approved');
+    if (verificationElement) {
+        if (user.isVerified) {
+            verificationElement.classList.remove('hidden');
+        } else {
+            verificationElement.classList.add('hidden');
+        }
     }
 }
 
@@ -797,9 +804,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if we have user data in session storage
     const userData = JSON.parse(sessionStorage.getItem('userData'));
     
-    if (userData) {
-        // Update the user information in the sidebar
-        updateUserInfo(userData);
+    if (userData && userData.user) {
+        // Update the user information with the nested user object
+        updateUserInfo(userData.user);
     } else {
         // If no userData in session, try to fetch it
         const token = sessionStorage.getItem('authToken');
@@ -810,17 +817,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .then(response => response.json())
-            .then(userData => {
-                // Save to session storage for future use
-                sessionStorage.setItem('userData', JSON.stringify(userData));
-                // Update the UI
-                updateUserInfo(userData);
+            .then(data => {
+                // Store the complete response in sessionStorage
+                sessionStorage.setItem('userData', JSON.stringify(data));
+                // Update the UI with the user object
+                if (data.user) {
+                    updateUserInfo(data.user);
+                }
             })
             .catch(error => console.error('Error fetching user profile:', error));
         }
     }
+    
+    // Update available balance
+    const availableBalanceElement = document.getElementById('availableBalance');
+    if (availableBalanceElement && userData) {
+        availableBalanceElement.textContent = formatCurrency(userData.availableBalance || 0);
+    }
 });
-
 /**
  * Update referral chart with data from API
  * @param {Object} referralData - Referral data from API
