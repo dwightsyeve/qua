@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const Wallet = require('../models/Wallet');
 const db = require('../database');
+const Referral = require('../models/Referral');
 const { sendVerificationEmail } = require('../utils/emailService');
 const { generateTRC20Address } = require('../utils/WalletUtils');
 
