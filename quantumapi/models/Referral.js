@@ -3,6 +3,14 @@ const User = require('./User');
 const Wallet = require('./Wallet');
 const Transaction = require('./Transaction');
 
+// No-op logger as a replacement for referralLogger
+const referralLogger = {
+  info: () => {},
+  error: () => {},
+  warning: () => {},
+  debug: () => {}
+};
+
 class Referral {
   /**
    * Create referrals table if it doesn't exist
@@ -33,6 +41,19 @@ class Referral {
    */
   static create(referralData) {
     try {
+      referralLogger.info(`Creating referral relationship: Referrer=${referralData.referrerId}, Referred=${referralData.referredId}, Level=${referralData.level}`);
+      
+      // Check if this referral relationship already exists
+      const existingReferral = db.prepare(`
+        SELECT id FROM referrals 
+        WHERE referrerId = ? AND referredId = ?
+      `).get(referralData.referrerId, referralData.referredId);
+      
+      if (existingReferral) {
+        referralLogger.info(`Referral relationship already exists with ID ${existingReferral.id}`);
+        return existingReferral.id;
+      }
+      
       const stmt = db.prepare(`
         INSERT INTO referrals (referrerId, referredId, level)
         VALUES (?, ?, ?)
@@ -44,9 +65,15 @@ class Referral {
         referralData.level
       );
       
-      return result.lastInsertRowid;
+      const referralId = result.lastInsertRowid;
+      referralLogger.info(`Created new referral with ID ${referralId}`);
+      
+      return referralId;
     } catch (error) {
-      console.error('Error creating referral:', error);
+      referralLogger.error(`Error creating referral: ${error.message}`, { 
+        error: error.stack,
+        referralData
+      });
       return null;
     }
   }
@@ -314,8 +341,7 @@ class Referral {
       };
     }
   }
-  
-  /**
+    /**
    * Process a deposit and calculate referral commissions
    * This implements the 3-tier commission structure (5%, 2%, 1%)
    * @param {number} userId - User who made the deposit
@@ -323,43 +349,66 @@ class Referral {
    */
   static async processDepositForCommissions(userId, amount) {
     try {
+      referralLogger.info(`Processing deposit for commissions - User: ${userId}, Amount: ${amount}`);
+      
       // Get first-level referrer (who referred this user)
       const user = User.findById(userId);
       
-      if (!user || !user.referredBy) {
-        return; // No referrer, nothing to do
+      if (!user) {
+        referralLogger.error(`User ${userId} not found`);
+        return false;
+      }
+      
+      if (!user.referredBy) {
+        referralLogger.info(`User ${userId} has no referrer, skipping commission calculation`);
+        return false;
       }
       
       // Level 1 referrer (direct referrer) - 5%
       const level1ReferrerId = user.referredBy;
       const level1Commission = amount * 0.05; // 5% of deposit
       
+      referralLogger.info(`Level 1 referrer: ${level1ReferrerId}, Commission: ${level1Commission}`);
+      
       // Check if referral relationship exists
       let referral = db.prepare('SELECT * FROM referrals WHERE referrerId = ? AND referredId = ?')
                       .get(level1ReferrerId, userId);
       
       if (!referral) {
+        referralLogger.info(`Level 1 referral relationship doesn't exist, creating it`);
         // Create the referral relationship if it doesn't exist
-        this.create({
+        const referralId = this.create({
           referrerId: level1ReferrerId,
           referredId: userId,
           level: 1
         });
-      } else {
+        
+        // Fetch the newly created referral
+        referral = this.getById(referralId);
+      }
+      
+      if (referral) {
         // Update the commission
+        referralLogger.info(`Updating commission for referral ID ${referral.id} by ${level1Commission}`);
         this.updateCommission(referral.id, level1Commission);
+      } else {
+        referralLogger.error(`Failed to create or retrieve level 1 referral relationship`);
       }
       
       // Get level 1 referrer's wallet and update balance
       const level1Wallet = Wallet.findByUserId(level1ReferrerId);
       
       if (level1Wallet) {
+        referralLogger.info(`Found level 1 referrer's wallet, current balance: ${level1Wallet.balance}`);
+        
         // Add commission to wallet
         const newBalance = level1Wallet.balance + level1Commission;
         Wallet.updateBalance(level1ReferrerId, newBalance, level1Wallet.pendingBalance);
         
+        referralLogger.info(`Updated level 1 referrer's wallet, new balance: ${newBalance}`);
+        
         // Create transaction record
-        Transaction.create({
+        const transactionData = {
           userId: level1ReferrerId,
           type: 'ReferralCommission',
           amount: level1Commission,
@@ -370,7 +419,14 @@ class Referral {
             depositAmount: amount,
             commission: level1Commission
           })
-        });
+        };
+        
+        referralLogger.info(`Creating transaction record for level 1 commission`, transactionData);
+        
+        const transactionId = Transaction.create(transactionData);
+        referralLogger.info(`Created transaction with ID: ${transactionId}`);
+      } else {
+        referralLogger.error(`Level 1 referrer ${level1ReferrerId} has no wallet`);
       }
       
       // Level 2 referrer (referrer of referrer) - 2%
@@ -380,32 +436,47 @@ class Referral {
         const level2ReferrerId = level1User.referredBy;
         const level2Commission = amount * 0.02; // 2% of deposit
         
+        referralLogger.info(`Level 2 referrer: ${level2ReferrerId}, Commission: ${level2Commission}`);
+        
         // Check if level 2 referral relationship exists
         referral = db.prepare('SELECT * FROM referrals WHERE referrerId = ? AND referredId = ?')
                      .get(level2ReferrerId, userId);
         
         if (!referral) {
+          referralLogger.info(`Level 2 referral relationship doesn't exist, creating it`);
           // Create the referral relationship if it doesn't exist
-          this.create({
+          const referralId = this.create({
             referrerId: level2ReferrerId,
             referredId: userId,
             level: 2
           });
-        } else {
+          
+          // Fetch the newly created referral
+          referral = this.getById(referralId);
+        }
+        
+        if (referral) {
           // Update the commission
+          referralLogger.info(`Updating commission for referral ID ${referral.id} by ${level2Commission}`);
           this.updateCommission(referral.id, level2Commission);
+        } else {
+          referralLogger.error(`Failed to create or retrieve level 2 referral relationship`);
         }
         
         // Get level 2 referrer's wallet and update balance
         const level2Wallet = Wallet.findByUserId(level2ReferrerId);
         
         if (level2Wallet) {
+          referralLogger.info(`Found level 2 referrer's wallet, current balance: ${level2Wallet.balance}`);
+          
           // Add commission to wallet
           const newBalance = level2Wallet.balance + level2Commission;
           Wallet.updateBalance(level2ReferrerId, newBalance, level2Wallet.pendingBalance);
           
+          referralLogger.info(`Updated level 2 referrer's wallet, new balance: ${newBalance}`);
+          
           // Create transaction record
-          Transaction.create({
+          const transactionData = {
             userId: level2ReferrerId,
             type: 'ReferralCommission',
             amount: level2Commission,
@@ -416,7 +487,14 @@ class Referral {
               depositAmount: amount,
               commission: level2Commission
             })
-          });
+          };
+          
+          referralLogger.info(`Creating transaction record for level 2 commission`, transactionData);
+          
+          const transactionId = Transaction.create(transactionData);
+          referralLogger.info(`Created transaction with ID: ${transactionId}`);
+        } else {
+          referralLogger.error(`Level 2 referrer ${level2ReferrerId} has no wallet`);
         }
         
         // Level 3 referrer - 1%
@@ -426,32 +504,47 @@ class Referral {
           const level3ReferrerId = level2User.referredBy;
           const level3Commission = amount * 0.01; // 1% of deposit
           
+          referralLogger.info(`Level 3 referrer: ${level3ReferrerId}, Commission: ${level3Commission}`);
+          
           // Check if level 3 referral relationship exists
           referral = db.prepare('SELECT * FROM referrals WHERE referrerId = ? AND referredId = ?')
                        .get(level3ReferrerId, userId);
           
           if (!referral) {
+            referralLogger.info(`Level 3 referral relationship doesn't exist, creating it`);
             // Create the referral relationship if it doesn't exist
-            this.create({
+            const referralId = this.create({
               referrerId: level3ReferrerId,
               referredId: userId,
               level: 3
             });
-          } else {
+            
+            // Fetch the newly created referral
+            referral = this.getById(referralId);
+          }
+          
+          if (referral) {
             // Update the commission
+            referralLogger.info(`Updating commission for referral ID ${referral.id} by ${level3Commission}`);
             this.updateCommission(referral.id, level3Commission);
+          } else {
+            referralLogger.error(`Failed to create or retrieve level 3 referral relationship`);
           }
           
           // Get level 3 referrer's wallet and update balance
           const level3Wallet = Wallet.findByUserId(level3ReferrerId);
           
           if (level3Wallet) {
+            referralLogger.info(`Found level 3 referrer's wallet, current balance: ${level3Wallet.balance}`);
+            
             // Add commission to wallet
             const newBalance = level3Wallet.balance + level3Commission;
             Wallet.updateBalance(level3ReferrerId, newBalance, level3Wallet.pendingBalance);
             
+            referralLogger.info(`Updated level 3 referrer's wallet, new balance: ${newBalance}`);
+            
             // Create transaction record
-            Transaction.create({
+            const transactionData = {
               userId: level3ReferrerId,
               type: 'ReferralCommission',
               amount: level3Commission,
@@ -462,12 +555,31 @@ class Referral {
                 depositAmount: amount,
                 commission: level3Commission
               })
-            });
+            };
+            
+            referralLogger.info(`Creating transaction record for level 3 commission`, transactionData);
+            
+            const transactionId = Transaction.create(transactionData);
+            referralLogger.info(`Created transaction with ID: ${transactionId}`);
+          } else {
+            referralLogger.error(`Level 3 referrer ${level3ReferrerId} has no wallet`);
           }
+        } else {
+          referralLogger.info(`No level 3 referrer found for user ${userId}`);
         }
+      } else {
+        referralLogger.info(`No level 2 referrer found for user ${userId}`);
       }
+      
+      referralLogger.info(`Successfully processed deposit for commissions - User: ${userId}, Amount: ${amount}`);
+      return true;
     } catch (error) {
-      console.error('Error processing deposit for commissions:', error);
+      referralLogger.error(`Error processing deposit for commissions: ${error.message}`, {
+        userId,
+        amount,
+        stack: error.stack
+      });
+      return false;
     }
   }
 
@@ -560,6 +672,8 @@ class Referral {
  */
 static getStatsByUserId(userId) {
   try {
+      referralLogger.info(`Getting referral stats for user ${userId}`);
+      
       // Count active referrals (users who have made at least one deposit)
       const activeStmt = db.prepare(`
           SELECT COUNT(DISTINCT r.referredId) as activeCount 
@@ -567,8 +681,8 @@ static getStatsByUserId(userId) {
           JOIN users u ON u.id = r.referredId
           JOIN transactions t ON t.userId = r.referredId
           WHERE r.referrerId = ? 
-          AND t.type = 'deposit' 
-          AND t.status = 'completed'
+          AND LOWER(t.type) = 'deposit' 
+          AND LOWER(t.status) = 'completed'
       `);
       
       // Count pending referrals (signed up but no deposits yet)
@@ -578,31 +692,42 @@ static getStatsByUserId(userId) {
           JOIN users u ON u.id = r.referredId
           LEFT JOIN (
               SELECT userId FROM transactions 
-              WHERE type = 'deposit' AND status = 'completed'
+              WHERE LOWER(type) = 'deposit' AND LOWER(status) = 'completed'
               GROUP BY userId
           ) t ON t.userId = r.referredId
           WHERE r.referrerId = ? AND t.userId IS NULL
       `);
       
-      // Rest of the method remains unchanged
+      // Get earnings from ReferralCommission transactions
       const earningsStmt = db.prepare(`
           SELECT COALESCE(SUM(amount), 0) as totalEarnings
           FROM transactions
-          WHERE userId = ? AND type = 'referral' AND status = 'completed'
+          WHERE userId = ? 
+          AND (LOWER(type) = 'referralcommission' OR LOWER(type) = 'referral') 
+          AND LOWER(status) = 'completed'
       `);
       
       const activeResult = activeStmt.get(userId);
       const pendingResult = pendingStmt.get(userId);
       const earningsResult = earningsStmt.get(userId);
       
-      return {
+      // Also get total referrals
+      const totalReferrals = this.countByReferrerId(userId);
+      
+      const stats = {
+          totalCount: totalReferrals,
           activeCount: activeResult.activeCount || 0,
           pendingCount: pendingResult.pendingCount || 0,
           earnings: earningsResult.totalEarnings || 0
       };
+      
+      referralLogger.info(`Referral stats for user ${userId}:`, stats);
+      return stats;
   } catch (error) {
-      console.error(`Error getting referral stats for user ${userId}:`, error);
-      return { activeCount: 0, pendingCount: 0, earnings: 0 };
+      referralLogger.error(`Error getting referral stats for user ${userId}: ${error.message}`, {
+          error: error.stack
+      });
+      return { totalCount: 0, activeCount: 0, pendingCount: 0, earnings: 0 };
   }
 }
 

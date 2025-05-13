@@ -28,4 +28,9 @@ router.post('/admin/auth/register', authenticateToken, isAdmin, userController.r
 router.post('/admin/impersonate/:userId', authenticateToken, isAdmin, userController.impersonateUser);
 router.post('/admin/revert-impersonation', authenticateToken, userController.revertImpersonation);
 
+// Password reset routes
+router.post('/reset-password-request', userController.requestPasswordReset);
+router.post('/reset-password', userController.resetPassword);
+
+
 module.exports = router;

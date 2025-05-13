@@ -27,6 +27,8 @@ class User {
             lastLogin TEXT,
             profilePictureUrl TEXT,
             bio TEXT,
+            resetToken TEXT,
+            resetTokenExpiry TEXT,
             location_timezone TEXT,
             privacy_showEmail INTEGER DEFAULT 1,
             privacy_publicProfile INTEGER DEFAULT 0,
@@ -41,7 +43,8 @@ class User {
             security_activityLogsEnabled INTEGER DEFAULT 1,
             cookiePreferences_performance INTEGER DEFAULT 1,
             cookiePreferences_functionality INTEGER DEFAULT 1,
-            cookiePreferences_marketing INTEGER DEFAULT 0
+            cookiePreferences_marketing INTEGER DEFAULT 0,
+            updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `).run();
       }
@@ -65,7 +68,7 @@ static findByUsername(username) {
   }
 
   static findByReferralCode(referralCode) {
-    return db.prepare('SELECT id FROM users WHERE referralCode = ?').get(referralCode);
+    return db.prepare('SELECT * FROM users WHERE referralCode = ?').get(referralCode);
   }
 
   static create(user) {
@@ -329,6 +332,68 @@ static findByUsername(username) {
       FROM users
     `).all();
   }
+
+
+  // Add these methods to your User class
+
+/**
+ * Update user's reset token and expiry
+ * @param {number} userId - User ID
+ * @param {string} resetToken - Password reset token
+ * @param {Date} expiryDate - Token expiration date
+ * @returns {boolean} - Success status
+ */
+static updateResetToken(userId, resetToken, expiryDate) {
+  try {
+    const stmt = db.prepare(`
+      UPDATE users
+      SET resetToken = ?,
+          resetTokenExpiry = ?,
+          updatedAt = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `);
+    
+    const result = stmt.run(
+      resetToken,
+      expiryDate.toISOString(),
+      userId
+    );
+    
+    return result.changes > 0;
+  } catch (error) {
+    console.error('Error updating reset token:', error);
+    return false;
+  }
 }
+
+/**
+ * Update user's password and clear reset token
+ * @param {number} userId - User ID
+ * @param {string} hashedPassword - New hashed password
+ * @returns {boolean} - Success status
+ */
+static updatePassword(userId, hashedPassword) {
+  try {
+    const stmt = db.prepare(`
+      UPDATE users
+      SET password = ?,
+          resetToken = NULL,
+          resetTokenExpiry = NULL,
+          updatedAt = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `);
+    
+    const result = stmt.run(hashedPassword, userId);
+    return result.changes > 0;
+  } catch (error) {
+    console.error('Error updating password:', error);
+    return false;
+  }
+}
+}
+
+
+
+
 
 module.exports = User;

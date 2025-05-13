@@ -5,7 +5,7 @@ const User = require('../models/User');
 const Wallet = require('../models/Wallet');
 const db = require('../database');
 const Referral = require('../models/Referral');
-const { sendVerificationEmail } = require('../utils/emailService');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/emailService');
 const { generateTRC20Address } = require('../utils/WalletUtils');
 
 // Controller for user registration
@@ -697,6 +697,139 @@ exports.revertImpersonation = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to revert impersonation. Please try again.'
+    });
+  }
+};
+
+
+// Add these methods to your existing userController.js
+
+// Controller for requesting password reset
+exports.requestPasswordReset = async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    // Validate input
+    if (!email) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Email is required' 
+      });
+    }
+    
+    if (!validateEmail(email)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please enter a valid email address' 
+      });
+    }
+
+    // Find user by email
+    const user = User.findByEmail(email);
+    
+    // Don't reveal if user exists or not for security reasons
+    if (!user) {
+      // Still return success to prevent user enumeration
+      return res.status(200).json({
+        success: true,
+        message: 'If your email is registered, you will receive a password reset link'
+      });
+    }
+    
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const tokenExpiry = new Date();
+    tokenExpiry.setHours(tokenExpiry.getHours() + 1); // Token valid for 1 hour
+    
+    // Save reset token to user record
+    User.updateResetToken(user.id, resetToken, tokenExpiry);
+    
+    // Generate reset URL
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://qua-vagw.onrender.com' 
+      : 'http://localhost:3000';
+    
+    const resetUrl = `${baseUrl}/reset-password.html?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    
+    // Send email with reset token
+    await sendPasswordResetEmail(email, resetUrl, `${user.firstName} ${user.lastName}`);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Password reset link sent to your email address'
+    });
+  } catch (error) {
+    console.error('Password reset request error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process password reset request. Please try again.'
+    });
+  }
+};
+
+// Controller for resetting password with token
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, email, newPassword } = req.body;
+    
+    // Validate inputs
+    if (!token || !email || !newPassword) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Token, email and new password are required' 
+      });
+    }
+    
+    if (!validatePassword(newPassword)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Password must be at least 8 characters with uppercase, lowercase, and special characters' 
+      });
+    }
+    
+    // Find user by email
+    const user = User.findByEmail(email);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Verify token is valid and not expired
+    if (!user.resetToken || user.resetToken !== token) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset token'
+      });
+    }
+    
+    // Check if token has expired
+    const tokenExpiry = new Date(user.resetTokenExpiry);
+    if (tokenExpiry < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Reset token has expired. Please request a new password reset link.'
+      });
+    }
+    
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    
+    // Update user's password and clear reset token
+    User.updatePassword(user.id, hashedPassword);
+    
+    res.status(200).json({
+      success: true,
+      message: 'Password has been reset successfully. You can now log in with your new password.'
+    });
+  } catch (error) {
+    console.error('Password reset error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reset password. Please try again.'
     });
   }
 };

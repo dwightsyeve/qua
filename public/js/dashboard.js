@@ -754,17 +754,30 @@ async function fetchReferralData() {
                 'Content-Type': 'application/json'
             }
         });
-        const referralData = await response.json();
+        
         if (response.ok) {
+            const referralData = await response.json();
             updateReferralChart(referralData);
         } else {
-            showError('Failed to fetch referral data. Please try again.');
+            // Instead of showing error, silently use default values
+            console.error('Failed to fetch referral data. Using default values.');
+            updateReferralChart({
+                activeReferrals: 0,
+                pendingSignups: 0,
+                totalEarnings: 0
+            });
         }
     } catch (error) {
-        showError('Error fetching referral data. Please check your connection.');
+        // Log error to console but don't show to user
+        console.error('Error fetching referral data:', error);
+        // Use default values of 0 instead of showing an error
+        updateReferralChart({
+            activeReferrals: 0,
+            pendingSignups: 0,
+            totalEarnings: 0
+        });
     }
 }
-
 /**
  * Initialize referral donut chart
  */
@@ -811,7 +824,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // If no userData in session, try to fetch it
         const token = sessionStorage.getItem('authToken');
         if (token) {
-            fetch('/api/user/profile', {
+            fetch('/api/dashboard', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -834,6 +847,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (availableBalanceElement && userData) {
         availableBalanceElement.textContent = formatCurrency(userData.availableBalance || 0);
     }
+    fetchRecentActivity();
 });
 /**
  * Update referral chart with data from API
@@ -882,10 +896,14 @@ async function fetchRecentActivity() {
             const activityData = await response.json();
             updateRecentActivity(activityData);
         } else {
-            showError('Failed to fetch recent activity. Please try again.');
+            // Silently handle error and show empty state
+            console.error('Failed to fetch recent activity. Using empty state.');
+            updateRecentActivity([]);
         }
     } catch (error) {
-        showError('Error fetching recent activity. Please check your connection.');
+        // Log error to console but don't show to user
+        console.error('Error fetching recent activity:', error);
+        updateRecentActivity([]);
     }
 }
 
@@ -894,43 +912,105 @@ async function fetchRecentActivity() {
  * @param {Array} activities - Activities data from API
  */
 function updateRecentActivity(activities) {
-    const activityList = document.getElementById('recent-activity-list');
-    if (!activityList) {
-        console.warn('Recent activity list element (#recent-activity-list) not found.');
+    const activityContainer = document.querySelector('.scrollable-table-container');
+    if (!activityContainer) {
+        console.warn('Recent activity container element not found.');
         return;
     }
-    activityList.innerHTML = '';
-
+    
+    // Create fresh table structure
+    activityContainer.innerHTML = `
+        <table class="min-w-full">
+            <thead>
+                <tr>
+                    <th class="py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th class="py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th class="py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                </tr>
+            </thead>
+            <tbody id="activity-tbody" class="divide-y divide-gray-200">
+            </tbody>
+        </table>
+    `;
+    
+    const tbody = document.getElementById('activity-tbody');
+    
     if (!activities || activities.length === 0) {
-        const noActivityItem = document.createElement('li');
-        noActivityItem.textContent = 'No recent activity to display.';
-        noActivityItem.className = 'text-gray-500 text-center p-4';
-        activityList.appendChild(noActivityItem);
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `
+            <td colspan="4" class="py-6 text-center text-gray-500">
+                <div class="flex flex-col items-center justify-center">
+                    <i class="fas fa-history text-3xl mb-2 text-gray-300"></i>
+                    <p>No recent activity to display</p>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(emptyRow);
         return;
     }
 
-    activities.slice(0, 8).forEach(activity => {
-        const listItem = document.createElement('li');
-        listItem.className = 'py-3 px-2 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors duration-150 ease-in-out';
+    // Add activity entries to the tbody
+    activities.forEach(activity => {
+        const row = document.createElement('tr');
         
-        const iconClass = activity.iconClass || 'fa-bell';
-        const activityTime = activity.timestamp ? new Date(activity.timestamp).toLocaleString() : (activity.time || 'Recently');
-
-        listItem.innerHTML = `
-            <div class="flex items-center">
-                <div class="mr-3">
-                    <i class="fas ${iconClass} text-gray-400"></i>
+        // Determine badge color based on type
+        let badgeClass = 'bg-gray-100 text-gray-800';
+        if (activity.type === 'deposit') badgeClass = 'bg-green-100 text-green-800';
+        else if (activity.type === 'withdrawal') badgeClass = 'bg-red-100 text-red-800';
+        else if (activity.type === 'investment') badgeClass = 'bg-indigo-100 text-indigo-800';
+        else if (activity.type === 'referral') badgeClass = 'bg-blue-100 text-blue-800';
+        else if (activity.type === 'profit') badgeClass = 'bg-purple-100 text-purple-800';
+        
+        // Determine status badge
+        let statusBadge = 'status-pending';
+        if (activity.status === 'completed' || activity.status === 'approved' || activity.status === 'paid' || activity.status === 'active') {
+            statusBadge = 'status-approved';
+        } else if (activity.status === 'rejected' || activity.status === 'failed') {
+            statusBadge = 'status-rejected';
+        }
+        
+        // Determine amount color and prefix
+        let amountColor = 'text-gray-800';
+        let amountPrefix = '';
+        
+        if (activity.type === 'deposit' || activity.type === 'referral' || activity.type === 'profit') {
+            amountColor = 'text-green-600';
+            amountPrefix = '+';
+        } else if (activity.type === 'withdrawal') {
+            amountColor = 'text-red-600';
+            amountPrefix = '-';
+        } else if (activity.type === 'investment') {
+            amountColor = 'text-indigo-600';
+        }
+        
+        // Format date
+        const activityDate = activity.date ? new Date(activity.date).toLocaleDateString() : 'N/A';
+        
+        row.innerHTML = `
+            <td class="py-3 text-sm">
+                <div class="flex items-center">
+                    <span class="${badgeClass} text-xs px-2 py-1 rounded-full mr-2">
+                        ${activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}
+                    </span>
+                    <span>${activity.description || ''}</span>
                 </div>
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-800">${activity.description || 'Activity description missing'}</p>
-                    <p class="text-xs text-gray-500">${activityTime}</p>
-                </div>
-                ${activity.detailsLink ? `<a href="${activity.detailsLink}" class="text-xs text-indigo-600 hover:text-indigo-800">View</a>` : ''}
-            </div>
+            </td>
+            <td class="py-3 text-sm">
+                <span class="status-badge ${statusBadge}">
+                    ${activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
+                </span>
+            </td>
+            <td class="py-3 text-sm font-medium ${amountColor}">
+                ${amountPrefix}${formatCurrency(activity.amount || 0).replace('$', '$')}
+            </td>
+            <td class="py-3 text-sm text-gray-500">${activityDate}</td>
         `;
-        activityList.appendChild(listItem);
+        
+        tbody.appendChild(row);
     });
 }
+
 
 /**
  * Format a number as currency

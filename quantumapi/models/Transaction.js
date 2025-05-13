@@ -111,7 +111,9 @@ static getTotalReferralEarnings(userId) {
       const stmt = db.prepare(`
           SELECT COALESCE(SUM(amount), 0) as totalEarnings
           FROM transactions
-          WHERE userId = ? AND type = 'referral' AND status = 'completed'
+          WHERE userId = ? 
+          AND (LOWER(type) = 'referral' OR LOWER(type) = 'referralcommission' OR LOWER(type) = 'referralreward') 
+          AND LOWER(status) = 'completed'
       `);
       
       const result = stmt.get(userId);

@@ -5,7 +5,9 @@ const API_ENDPOINTS = {
     getCommissionHistory: '/api/referrals/commissions',
     getMilestoneProgress: '/api/referrals/milestone',
     claimMilestoneReward: '/api/referrals/claim-milestone',
-    getReferralLink: '/api/referrals/link'
+    getReferralLink: '/api/referrals/link',
+    triggerReferralCheck: '/api/wallet/deposit-notification', // New endpoint to manually trigger referral processing
+    checkReferralStatus: '/api/referrals/check-status' // New endpoint to check referral status
 };
 
 // Helper function to get the auth token from storage
@@ -18,6 +20,91 @@ function getAuthToken() {
     
     // Fall back to localStorage if not found in sessionStorage
     return localStorage.getItem('token');
+}
+
+// New function to manually check referral status
+async function checkReferralStatus() {
+    try {
+        showNotification('Checking referral system status...', 'info');
+        
+        const response = await fetch(API_ENDPOINTS.checkReferralStatus, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to check referral status');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Referral system check completed successfully!', 'success');
+            
+            // If we received updated stats, refresh the displayed stats
+            if (data.stats) {
+                updateReferralStats(data.stats);
+            }
+            
+            // Show detailed status message if provided
+            if (data.message) {
+                // Create a modal or use an existing notification system for more detailed output
+                showDetailedNotification('Referral Check Results', data.message);
+            }
+        } else {
+            showNotification('Referral check failed: ' + (data.message || 'Unknown error'), 'error');
+        }
+    } catch (error) {
+        console.error('Error checking referral status:', error);
+        showNotification('Failed to check referral status. Please try again.', 'error');
+    }
+}
+
+// Helper function to show a more detailed notification/modal for debug info
+function showDetailedNotification(title, message) {
+    // Check if we already have a modal container
+    let modalContainer = document.getElementById('detailedNotificationModal');
+    
+    // If not, create one
+    if (!modalContainer) {
+        modalContainer = document.createElement('div');
+        modalContainer.id = 'detailedNotificationModal';
+        modalContainer.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50';
+        document.body.appendChild(modalContainer);
+    }
+    
+    // Set the modal content
+    modalContainer.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">${title}</h3>
+                <button id="closeDetailedModal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="overflow-y-auto">
+                <pre class="text-sm text-gray-700 whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">${message}</pre>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button id="closeDetailedModalBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Close</button>
+            </div>
+        </div>
+    `;
+    
+    // Show the modal
+    modalContainer.classList.remove('hidden');
+    
+    // Add event listeners to close buttons
+    document.getElementById('closeDetailedModal').addEventListener('click', () => {
+        modalContainer.classList.add('hidden');
+    });
+    
+    document.getElementById('closeDetailedModalBtn').addEventListener('click', () => {
+        modalContainer.classList.add('hidden');
+    });
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
@@ -72,96 +159,17 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         });
     });
+    
 
     // Copy referral link functionality
     const copyLinkBtn = document.getElementById('copyLinkBtn');
-    const referralLink = document.getElementById('referralLink');
-    const notification = document.getElementById('notification');
-    
-    if (copyLinkBtn && referralLink) {
+    const referralLinkInput = document.getElementById('referralLink');
+
+    if (copyLinkBtn && referralLinkInput) {
         copyLinkBtn.addEventListener('click', () => {
-            referralLink.select();
+            referralLinkInput.select();
             document.execCommand('copy');
-            
-            // Show notification
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        });
-    }
-
-    // Share buttons functionality
-    const shareButtons = document.querySelectorAll('.btn-share');
-    
-    shareButtons.forEach(button => {
-        button.addEventListener('click', async () => {
-            const platform = button.dataset.platform;
-            const link = referralLink.value;
-            const text = "Join me on QuantumFX and earn daily profits from AI-driven investments!";
-            
-            let shareUrl = '';
-            
-            switch (platform) {
-                case 'whatsapp':
-                    shareUrl = `https://wa.me/?text=${encodeURIComponent(`${text} ${link}`)}`;
-                    break;
-                case 'telegram':
-                    shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`;
-                    break;
-                case 'twitter':
-                    shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`${text} ${link}`)}`;
-                    break;
-                case 'facebook':
-                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`;
-                    break;
-                case 'linkedin':
-                    shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(link)}`;
-                    break;
-                case 'email':
-                    shareUrl = `mailto:?subject=${encodeURIComponent('Join me on QuantumFX')}&body=${encodeURIComponent(`${text} ${link}`)}`;
-                    break;
-            }
-            
-            if (shareUrl) {
-                window.open(shareUrl, '_blank');
-            }
-        });
-    });
-
-    // Share buttons in empty states
-    const shareFromEmptyBtn = document.getElementById('shareFromEmpty');
-    const shareFromCommissionsBtn = document.getElementById('shareFromCommissions');
-    
-    if (shareFromEmptyBtn) {
-        shareFromEmptyBtn.addEventListener('click', () => {
-            // Switch to the overview tab and focus on the referral link
-            tabButtons.forEach(btn => {
-                if (btn.dataset.tab === 'overview') {
-                    btn.click();
-                }
-            });
-            
-            setTimeout(() => {
-                referralLink.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                referralLink.focus();
-            }, 300);
-        });
-    }
-    
-    if (shareFromCommissionsBtn) {
-        shareFromCommissionsBtn.addEventListener('click', () => {
-            // Switch to the overview tab and focus on the referral link
-            tabButtons.forEach(btn => {
-                if (btn.dataset.tab === 'overview') {
-                    btn.click();
-                }
-            });
-            
-            setTimeout(() => {
-                referralLink.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                referralLink.focus();
-            }, 300);
+            showNotification('Referral link copied to clipboard!', 'success');
         });
     }
 

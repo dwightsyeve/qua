@@ -101,109 +101,99 @@ exports.unlockUser = async (req, res) => {
 // Controller for admin to update a user's balance
 exports.updateUserBalance = async (req, res) => {
     try {
-        const { userId } = req.params;
-        // Accept different possible parameter names that the client might send
-        // Now supports 'adjustment' parameter for relative balance changes
-        const { newBalance, balance, amount, adjustment, reason } = req.body;
+        const userId = req.params.userId;
         
-        // Check if we're doing a direct balance set or an adjustment
-        const isAdjustment = adjustment !== undefined;
-        
-        let numericAmount;
-        if (isAdjustment) {
-            // Handle as an adjustment to existing balance
-            numericAmount = parseFloat(adjustment);
-            
-            // Adjustment can be negative (for reducing balance)
-            if (isNaN(numericAmount)) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: 'Invalid adjustment amount. Please provide a valid number.' 
-                });
-            }
-        } else {
-            // Legacy behavior - direct balance setting
-            const balanceToSet = newBalance !== undefined ? newBalance : 
-                               amount !== undefined ? amount : 
-                               balance !== undefined ? balance : null;
-            
-            numericAmount = parseFloat(balanceToSet);
-            
-            // Direct balance setting must be non-negative
-            if (isNaN(numericAmount) || numericAmount < 0) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: 'Invalid balance amount. Please provide a positive number.' 
-                });
-            }
-        }
-        
-        // Use a default reason if none provided
-        const balanceReason = reason || 'Admin balance adjustment';
-
-        const wallet = await Wallet.findByUserId(userId);
-        if (!wallet) {
-            return res.status(404).json({ 
+        // Validate userId - ISSUE: This check is causing problems
+        // since req.params.id is a string, not undefined
+        if (userId === undefined || userId === null) {
+            return res.status(400).json({ 
                 success: false, 
-                message: 'Wallet not found for this user.' 
+                message: 'Invalid user ID: Missing ID parameter' 
             });
         }
-
-        // Record the old balance for logging and transaction creation
-        const oldBalance = parseFloat(wallet.balance);
         
-        // Calculate the new balance based on whether this is an adjustment or direct set
-        if (isAdjustment) {
-            newBalance = oldBalance + numericAmount;
-            // Prevent negative balance
-            if (newBalance < 0) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: 'Cannot reduce balance below zero. Maximum reduction allowed: $' + oldBalance
-                });
-            }
-        } else {
-            newBalance = numericAmount;
+        const parsedUserId = parseInt(userId, 10);
+        
+        // Check if the parsed ID is valid
+        if (isNaN(parsedUserId) || parsedUserId <= 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid user ID: Not a positive number' 
+            });
         }
         
-        // Update the balance
-        await Wallet.updateBalance(userId, newBalance, wallet.pendingBalance);
-
-        // Log this admin action
-        const logMessage = isAdjustment 
-            ? `Admin ${req.user.id} adjusted balance for user ${userId} by ${numericAmount > 0 ? '+' : ''}${numericAmount} (${oldBalance} → ${newBalance}). Reason: ${balanceReason}`
-            : `Admin ${req.user.id} set balance for user ${userId} from ${oldBalance} to ${newBalance}. Reason: ${balanceReason}`;
-        console.log(logMessage);
+        const { adjustment, reason } = req.body;
         
-        // Create a transaction record
+        // Verify user exists before proceeding
+        const user = await User.findById(parsedUserId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+        
+        // Convert adjustment to a number and validate
+        const adjustmentAmount = parseFloat(adjustment);
+        if (isNaN(adjustmentAmount)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid adjustment amount' 
+            });
+        }
+        
+        // Find the user's wallet - using your implementation's method
+        let wallet = await Wallet.findByUserId(parsedUserId); 
+        
+        if (!wallet) {
+            // If wallet doesn't exist, create one with the adjustment amount as balance
+            wallet = await Wallet.createForUser(parsedUserId);
+            
+            // After creating the wallet, update its balance
+            if (wallet && adjustmentAmount >= 0) {
+                await Wallet.updateBalance(parsedUserId, adjustmentAmount, 0);
+                // Refresh wallet data
+                wallet = await Wallet.findByUserId(parsedUserId);
+            }
+        } else {
+            // Update the existing wallet balance
+            let currentBalance = parseFloat(wallet.balance);
+            currentBalance += adjustmentAmount;
+            
+            if (currentBalance < 0) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Insufficient balance for this reduction' 
+                });
+            }
+            
+            // Use your implementation's update method
+            await Wallet.updateBalance(parsedUserId, currentBalance, wallet.pendingBalance || 0);
+            // Refresh wallet data after update
+            wallet = await Wallet.findByUserId(parsedUserId);
+        }
+        
+        // Log the transaction
         await Transaction.create({
-            userId,
-            type: 'admin_adjustment',
-            amount: newBalance - oldBalance, // The actual change amount
-            status: 'Completed',
-            details: JSON.stringify({
-                adjustmentType: isAdjustment ? 'relative' : 'absolute',
-                adjustment: isAdjustment ? numericAmount : null,
-                previousBalance: oldBalance,
-                newBalance: newBalance,
-                reason: balanceReason,
-                adminId: req.user.id,
-                adminName: req.user.username || req.user.firstName || 'Admin'
-            })
-        });        res.status(200).json({ 
+            userId: parsedUserId,
+            amount: Math.abs(adjustmentAmount),
+            type: adjustmentAmount >= 0 ? 'deposit' : 'withdrawal',
+            status: 'completed',
+            description: reason || (adjustmentAmount >= 0 ? 'Admin balance increase' : 'Admin balance reduction'),
+            isAdminAction: true
+        });
+        
+        return res.json({ 
             success: true, 
-            message: 'User balance updated successfully.', 
-            data: { userId, newBalance: newBalance } 
+            message: 'User balance updated successfully', 
+            newBalance: wallet.balance 
         });
     } catch (error) {
         console.error('Error updating user balance:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Failed to update user balance', 
-            error: error.message 
-        });
+        return res.status(500).json({ success: false, message: 'Failed to update user balance', details: error.message });
     }
 };
+
 
 // Controller for admin to get details of a specific withdrawal
 // ...existing code...

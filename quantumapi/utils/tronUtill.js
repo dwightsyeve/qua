@@ -250,11 +250,34 @@ async function processDeposit(tx, userId) {
       SET balance = ?, updatedAt = CURRENT_TIMESTAMP
       WHERE userId = ?
     `).run(newBalance, userId);
-    
-    // Commit the transaction
+      // Commit the transaction
     db.prepare('COMMIT').run();
     
     console.log(`Deposit processed: ${amount} USDT for user ${userId}, tx: ${tx.txID}`);
+    
+    // Process referral commissions for this deposit
+    try {
+      const { processDepositForReferrals } = require('../controller/ReferralController');
+      const referralLogger = require('./referralLogger');
+      
+      referralLogger.info(`Deposit detected in blockchain monitor - User: ${userId}, Amount: ${amount}, TxHash: ${tx.txID}`, 
+        { userId, amount, txHash: tx.txID }, true);
+      
+      // Process the deposit for referrals (don't await, let it run in background)
+      processDepositForReferrals(userId, amount)
+        .then(result => {
+          referralLogger.info(`Referral commission processing completed for blockchain deposit: ${result ? 'Success' : 'Failed'}`, 
+            { userId, amount, txHash: tx.txID, result }, true);
+        })
+        .catch(error => {
+          referralLogger.error(`Error processing referral commission: ${error.message}`, 
+            { userId, amount, txHash: tx.txID, error: error.stack }, true);
+        });
+    } catch (referralError) {
+      console.error('Error initiating referral processing:', referralError);
+      // Don't fail the deposit process if referral processing fails
+    }
+    
     return true;
   } catch (error) {
     // Rollback the transaction on error

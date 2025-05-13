@@ -10,6 +10,15 @@ const Wallet = require('../models/Wallet');
 const Transaction = require('../models/Transaction');
 const { sendEmailNotification } = require('../utils/WalletUtils');
 
+// No-op logger as a replacement for referralLogger
+const referralLogger = {
+  info: () => {},
+  error: () => {},
+  warning: () => {},
+  debug: () => {}
+};
+const db = require('../database');
+
 /**
  * Get referral link for the current user
  * Endpoint: GET /api/referrals/link
@@ -140,16 +149,41 @@ exports.getReferralsList = async (req, res) => {
     const totalCount = Referral.countByReferrerId(userId);
     
     // Format referrals for frontend display
-    const formattedReferrals = referrals.map(ref => ({
-      id: ref.id,
-      username: ref.username,
-      avatar: null, // You can implement avatar fetching if needed
-      joined: ref.joined,
-      level: ref.level,
-      deposits: ref.commissionEarned / (ref.level === 1 ? 0.05 : ref.level === 2 ? 0.02 : 0.01), // Estimate total deposits based on commission
-      commission: ref.commissionEarned,
-      status: ref.status
-    }));
+    const formattedReferrals = referrals.map(ref => {
+      // Get actual deposit amount for this referred user
+      const actualDeposits = getTotalDeposits(ref.referredId);
+      
+      return {
+        id: ref.id,
+        username: ref.username,
+        avatar: null, // You can implement avatar fetching if needed
+        joined: ref.joined,
+        level: ref.level,
+        deposits: actualDeposits, // Real deposit amount instead of estimation
+        commission: ref.commissionEarned,
+        status: hasCompletedDeposit(ref.referredId) ? 'active' : 'inactive'
+      };
+    });
+
+    // Helper function to get total deposits
+    function getTotalDeposits(userId) {
+      const stmt = db.prepare(`
+        SELECT SUM(amount) as total FROM transactions 
+        WHERE userId = ? AND type = 'Deposit' AND status = 'Completed'
+      `);
+      const result = stmt.get(userId);
+      return result && result.total ? Number(result.total) : 0;
+    }
+
+    // Helper function to check if user has completed deposits
+    function hasCompletedDeposit(userId) {
+      const stmt = db.prepare(`
+        SELECT COUNT(*) as count FROM transactions 
+        WHERE userId = ? AND type = 'Deposit' AND status = 'Completed'
+      `);
+      const result = stmt.get(userId);
+      return result && result.count > 0;
+    }
     
     res.status(200).json({
       success: true,
@@ -248,13 +282,17 @@ exports.getMilestoneProgress = async (req, res) => {
     // Ensure milestones are initialized
     Milestone.initializeForUser(userId);
     
-    // Get total referrals
+    // Get total referrals and active referrals
     const totalReferrals = Referral.countByReferrerId(userId);
+    const activeReferrals = Referral.countActiveReferrals(userId); // Added this line
     
     // Get all milestones
     const milestones = Milestone.getByUserId(userId);
     
-    // Format milestones for frontend display
+    // Get next milestone
+    const nextMilestone = Milestone.getNextMilestone(userId, totalReferrals); // Added this line
+    
+    // Original milestone format code (can be kept for backward compatibility)
     const formattedMilestones = milestones.map(milestone => ({
       id: milestone.id,
       level: milestone.level,
@@ -266,10 +304,14 @@ exports.getMilestoneProgress = async (req, res) => {
       claimedAt: milestone.claimedAt
     }));
     
+    // Send response with the format expected by the frontend
     res.status(200).json({
       success: true,
-      milestones: formattedMilestones,
-      currentReferrals: totalReferrals
+      currentReferrals: activeReferrals,
+      targetReferrals: nextMilestone ? nextMilestone.target : 0,
+      milestoneReached: nextMilestone ? totalReferrals >= nextMilestone.target && nextMilestone.claimed === 0 : false,
+      // Include the old format for backward compatibility if needed
+      milestones: formattedMilestones
     });
   } catch (error) {
     console.error('Error getting milestone progress:', error);
@@ -280,7 +322,6 @@ exports.getMilestoneProgress = async (req, res) => {
     });
   }
 };
-
 /**
  * Claim a milestone reward
  * Endpoint: POST /api/referrals/claim-milestone
@@ -647,10 +688,58 @@ exports.adminModifyCommission = async (req, res) => {
  */
 exports.processDepositForReferrals = async (userId, amount) => {
   try {
-    await Referral.processDepositForCommissions(userId, amount);
-    return true;
+    referralLogger.info(`Processing deposit for referrals - User ID: ${userId}, Amount: ${amount}`);
+    
+    // Get user details
+    const user = User.findById(userId);
+    if (!user) {
+      referralLogger.error(`User ${userId} not found for referral processing`);
+      return false;
+    }
+    
+    referralLogger.info(`User found: ${user.username} (${user.email}), ReferredBy: ${user.referredBy}`);
+    
+    if (!user.referredBy) {
+      referralLogger.info(`User ${userId} has no referrer, skipping commission calculation`);
+      return false;
+    }
+    
+    // Get the referral chain (up to 3 levels)
+    const referralChain = [];
+    let currentUserId = userId;
+    let level = 0;
+    
+    while (currentUserId && level < 3) {
+      const currentUser = User.findById(currentUserId);
+      if (!currentUser || !currentUser.referredBy) break;
+      
+      const referrerId = currentUser.referredBy;
+      referralChain.push({
+        level: ++level,
+        userId: currentUserId,
+        referrerId: referrerId
+      });
+      
+      referralLogger.info(`Found Level ${level} referrer: ${referrerId} for user ${currentUserId}`);
+      currentUserId = referrerId;
+    }
+    
+    if (referralChain.length === 0) {
+      referralLogger.info(`No referrers found in chain for user ${userId}`);
+      return false;
+    }
+    
+    // Process the deposit for commissions
+    const result = await Referral.processDepositForCommissions(userId, amount);
+    
+    referralLogger.info(`Referral commission processing completed: ${result ? 'Success' : 'Failed'}`);
+    return result;
   } catch (error) {
-    console.error('Error processing deposit for referrals:', error);
+    referralLogger.error(`Error processing deposit for referrals: ${error.message}`, { 
+      userId, 
+      amount, 
+      stack: error.stack 
+    });
     return false;
   }
 };

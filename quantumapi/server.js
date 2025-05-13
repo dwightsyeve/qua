@@ -1,6 +1,8 @@
-const express = require('express');
-const path = require('path');
 const dotenv = require('dotenv');
+dotenv.config({ path: require('path').resolve(__dirname, '.env') });
+const express = require('express');
+
+const path = require('path');
 const cors = require('cors'); // Import CORS middleware
 const User = require('./models/User');
 const Wallet = require('./models/Wallet');
@@ -20,10 +22,9 @@ const { setupScheduler } = require('./jobs/scheduler');
 const { authenticateToken } = require('./middleware/authmiddleware');
 const { getProcessedTransactions } = require('./utils/tronUtill');
 const Notification = require('./models/Notification'); // Add this line
+const { setupReferralHooks, hookTransactionCreation } = require('./middleware/referralMiddleware'); // Add referral middleware
 const fs = require('fs');
 
-// Load env vars
-dotenv.config();
 
 const app = express();
 
@@ -33,6 +34,8 @@ app.use(cors());
 // Body parser middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
 
 
 // In your database initialization
@@ -47,66 +50,69 @@ try {
   Notification.createTable();
   console.log('Database tables initialized');
   const seedNotifications = require('./seeders/notificationSeeder');
-seedNotifications();
+  seedNotifications();
+  
+  // Initialize transaction hooks for referral processing
+
+
+
+  if (process.env.NODE_ENV !== 'test') {
+    setupScheduler();
+  }
+
+  // Use wallet routes
+  app.use('/api/wallet', walletRoutes);
+
+  // Ensure uploads directory exists
+  const uploadsDir = path.join(__dirname, 'public/uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('Created uploads directory:', uploadsDir);
+  }
+
+  // Serve static files from the public directory
+  const publicDir = path.join(__dirname, '../public');
+  app.use(express.static(publicDir));
+
+  // Also serve files from the API's public directory (for uploads)
+  app.use(express.static(path.join(__dirname, 'public')));
+
+  // Use auth routes
+  app.use('/api/auth', authRoutes);
+
+  // Use referral routes
+  app.use('/api/referrals', referralRoutes);
+
+  // Use investment routes
+  app.use('/api/investment', investmentRoutes);
+
+  // Use settings routes
+  app.use('/api/settings', require('./routes/settingsRoutes'));
+
+  // Use profile routes
+  app.use('/api/profile', require('./routes/profileRoutes'));
+
+  // Use dashboard routes
+  app.use('/api/dashboard', dashboardRoutes);
+
+  // Use notification routes
+  app.use('/api/notifications', notificationRoutes);
+
+  // Use admin routes
+  app.use('/api/admin', adminRoutes);
+
+  //Use transaction
+
+  // Test route
+  app.get('/test', (req, res) => {
+    res.send('Test works');
+  });
+
+  const port = process.env.PORT || 3000;
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
 } catch (error) {
   console.error('Error initializing database tables:', error);
+  process.exit(1); // Exit the process with an error code
 }
-Transaction.ensureSchema();
-
-
-if (process.env.NODE_ENV !== 'test') {
-  setupScheduler();
-}
-
-// Use wallet routes
-app.use('/api/wallet', walletRoutes);
-
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, 'public/uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log('Created uploads directory:', uploadsDir);
-}
-
-// Serve static files from the public directory
-const publicDir = path.join(__dirname, '../public');
-app.use(express.static(publicDir));
-
-// Also serve files from the API's public directory (for uploads)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Use auth routes
-app.use('/api/auth', authRoutes);
-
-// Use referral routes
-app.use('/api/referrals', referralRoutes);
-
-// Use investment routes
-app.use('/api/investment', investmentRoutes);
-
-// Use settings routes
-app.use('/api/settings', require('./routes/settingsRoutes'));
-
-// Use profile routes
-app.use('/api/profile', require('./routes/profileRoutes'));
-
-// Use dashboard routes
-app.use('/api/dashboard', dashboardRoutes);
-
-// Use notification routes
-app.use('/api/notifications', notificationRoutes);
-
-// Use admin routes
-app.use('/api/admin', adminRoutes);
-
-//Use transaction
-
-// Test route
-app.get('/test', (req, res) => {
-  res.send('Test works');
-});
-
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});

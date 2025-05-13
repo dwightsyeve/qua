@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Check if token exists, redirect to login if not
     if (!token) {
-        window.location.href = 'admin-auth.html';
+        window.location.href = 'admin-login.html';
         return;
     }
     
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Redirect to login page
-        window.location.href = 'admin-auth.html';
+        window.location.href = 'admin-login.html';
     }
     
     // Initialize the admin dashboard components and event listeners
@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (response.status === 403 || response.status === 401) {
                             alert('Session expired or unauthorized. Please log in again.');
                             localStorage.removeItem('adminToken');
-                            window.location.href = 'admin-auth.html';
+                            window.location.href = 'admin-login.html';
                             return; // Stop execution if redirected
                         }
                         throw new Error('Failed to fetch user details');
@@ -683,7 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (response.status === 403 || response.status === 401) {
                             alert('Session expired or unauthorized. Please log in again.');
                             localStorage.removeItem('adminToken');
-                            window.location.href = 'admin-auth.html';
+                            window.location.href = 'admin-login.html';
                             return;
                         }
                         throw new Error('Failed to fetch withdrawal details');
