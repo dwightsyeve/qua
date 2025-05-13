@@ -747,7 +747,7 @@ exports.requestPasswordReset = async (req, res) => {
     // Generate reset URL
     const baseUrl = process.env.NODE_ENV === 'production' 
       ? 'https://qua-vagw.onrender.com' 
-      : 'http://localhost:3000';
+      : 'https://qua-vagw.onrender.com';
     
     const resetUrl = `${baseUrl}/reset-password.html?token=${resetToken}&email=${encodeURIComponent(email)}`;
     
