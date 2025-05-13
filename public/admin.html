@@ -86,6 +86,7 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(5px);
+            overflow-y: auto; /* Allow scrolling on mobile */
         }
         .modal-content {
             background: linear-gradient(145deg, var(--primary-dark), var(--secondary-dark));
@@ -97,161 +98,198 @@
             box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
             border: 1px solid var(--border-color);
             animation: modalFadeIn 0.3s;
+            position: relative; /* For positioning children */
         }
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .close-button {
-            float: right;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .close-button:hover {
-            color: var(--accent-color);
-        }
-        .btn-action {
-            padding: 0.4rem 0.75rem;
-            margin-right: 0.25rem;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-        .status-active {
-            color: var(--success-color);
-            background: rgba(87, 255, 154, 0.1);
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-        }
-        .status-inactive {
-            color: var(--danger-color);
-            background: rgba(255, 87, 87, 0.1);
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-        }        footer {
-            margin-top: 3rem;
-            padding: 1.5rem;
-            text-align: center;
-            border-top: 1px solid var(--border-color);
-            background: rgba(0, 0, 0, 0.1);
-        }
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 1rem;
-            margin: 0;
-            padding: 0;
-        }
-        nav .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        nav a {
-            color: var(--text-light);
-            text-decoration: none;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            transition: all 0.2s;
-        }
-        nav a:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--accent-color);
-        }
-        nav h1 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-        nav h1 i {
-            color: var(--accent-color);
-            margin-right: 0.5rem;
-        }
-
-        /* Styles for scrollable tables and sticky headers */
-        .table-container.scrollable-table {
+        
+        /* Modal body scrollable content */
+        .modal-body {
+            max-height: 60vh;
             overflow-y: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            padding-right: 0.5rem;
+            /* Custom scrollbar for modal body */
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-color) rgba(0,0,0,0.1);
         }
-        .scrollable-table table {
-            width: 100%;
-            border-collapse: separate; /* Needed for sticky header to work well with border-radius */
-            border-spacing: 0;
+        .modal-body::-webkit-scrollbar {
+            width: 6px;
         }
-        .scrollable-table thead th {
-            position: sticky;
-            top: 0;
-            background: var(--card-bg); /* Or a slightly transparent version */
-            backdrop-filter: blur(5px);
-            z-index: 10;
-            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Custom scrollbar for webkit browsers */
-        .scrollable-table::-webkit-scrollbar {
-            width: 8px;
-        }
-        .scrollable-table::-webkit-scrollbar-track {
+        .modal-body::-webkit-scrollbar-track {
             background: rgba(0,0,0,0.1);
-            border-radius: 10px;
         }
-        .scrollable-table::-webkit-scrollbar-thumb {
+        .modal-body::-webkit-scrollbar-thumb {
             background: var(--accent-color);
-            border-radius: 10px;
+            border-radius: 6px;
         }
-        .scrollable-table::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-hover);
+        
+        /* Modal action buttons improved styling */
+        .modal-footer {
+            margin-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
         }
-        .admin-subsection {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-        }
-        .admin-subsection h3 {
-            margin-bottom: 1rem;
+        .modal-actions {
             display: flex;
-            align-items: center;
-            color: var(--text-light);
+            gap: 0.75rem;
+            margin-top: 1rem;
         }
-        .admin-subsection h3 i {
-            margin-right: 0.5rem;
-            color: var(--accent-color);
+        
+        /* Fix for modal actions on mobile */
+        @media (max-width: 480px) {
+            .modal-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .modal-actions button {
+                width: 100%;
+            }
+            
+            /* Adjust modal position on small screens */
+            .modal-content {
+                margin: 5% auto;
+                width: 90%;
+                padding: 1.5rem;
+            }
+        }
+        /* Responsive design media queries */
+        @media (max-width: 768px) {
+            .admin-section {
+                padding: 1rem;
+            }
+            
+            .search-container {
+                flex-direction: column;
+            }
+            
+            .search-container button {
+                width: 100%;
+                padding: 0.75rem;
+                margin-top: 0.5rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+                padding: 1.5rem;
+            }
+
+            nav .container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            nav ul {
+                flex-direction: column;
+                width: 100%;
+                margin-top: 1rem;
+            }
+
+            nav li {
+                width: 100%;
+            }
+
+            nav a {
+                display: block;
+                padding: 0.75rem 0;
+                width: 100%;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+                position: absolute;
+                top: 1.5rem;
+                right: 1.5rem;
+            }
+            
+            nav ul.collapsed {
+                display: none;
+            }
+            
+            nav ul.expanded {
+                display: flex;
+            }
+            
+            /* Table scroll indicator shown on mobile */
+            .table-scroll-indicator {
+                display: flex;
+            }
+            
+            /* Adjust table for better mobile view */
+            .scrollable-table {
+                max-height: 400px !important; /* Taller tables on mobile */
+                margin-bottom: 1rem;
+            }
+            
+            /* Smaller font size on mobile */
+            .scrollable-table table th,
+            .scrollable-table table td {
+                font-size: 0.9rem;
+            }
+            
+            /* Action buttons more compact on mobile */
+            .btn-action, .action-btn {
+                padding: 0.35rem 0.5rem;
+                font-size: 0.85rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            /* Adjust modal for mobile */
+            .modal-content h3 {
+                font-size: 1.2rem;
+                margin-bottom: 1rem;
+            }
+        }
+        
+        /* Extra small devices */
+        @media (max-width: 480px) {
+            .admin-section h2 {
+                font-size: 1.3rem;
+            }
+            
+            .scrollable-table table th,
+            .scrollable-table table td {
+                font-size: 0.85rem;
+                padding: 0.6rem 0.4rem;
+            }
+            
+            /* Even more compact buttons for very small screens */
+            .btn-action, .action-btn {
+                padding: 0.3rem 0.4rem;
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
-<body>
-    <header class="admin-header">
+<body>    <header class="admin-header">
         <nav>
             <div class="container">
                 <h1><i class="fas fa-shield-alt"></i> Admin Dashboard</h1>
-                <ul>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <ul id="navMenu" class="collapsed">
                     <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
                     <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> User Dashboard</a></li>
                     <li><a id="logoutButton" href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                 </ul>
             </div>
         </nav>
-    </header>    <main class="container">        <section id="user-management" class="admin-section">
+    </header><main class="container">        <section id="user-management" class="admin-section">
             <h2><i class="fas fa-users"></i> User Management</h2>
             <div class="search-container">
                 <input type="text" id="userSearchInput" placeholder="Search users by name or email...">
                 <button id="searchUserButton"><i class="fas fa-search"></i> Search</button>
+            </div>            <div class="table-scroll-indicator">
+                <i class="fas fa-arrows-left-right"></i> Scroll horizontally to see all data
             </div>
-            <div class="table-container scrollable-table max-h-96">
+            <div class="table-container scrollable-table">
                 <table id="usersTable">
-                    <thead class="sticky top-0 bg-white/80 backdrop-blur-sm">
+                    <thead>
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th class="action-col">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="usersTableBody">
@@ -265,6 +303,8 @@
             <div class="search-container">
                 <input type="text" id="withdrawalSearchInput" placeholder="Search withdrawals by ID or username...">
                 <button id="searchWithdrawalButton"><i class="fas fa-search"></i> Search</button>
+            </div>            <div class="table-scroll-indicator">
+                <i class="fas fa-arrows-left-right"></i> Scroll horizontally to see all data
             </div>
             <div class="table-container scrollable-table max-h-96">
                 <table id="withdrawalsTable">
@@ -277,7 +317,7 @@
                             <th>Wallet Address</th>
                             <th>Network</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th class="action-col">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="withdrawalsTableBody">
@@ -296,6 +336,8 @@
                 <div class="search-container">
                     <input type="text" id="adminWithdrawalHistorySearchInput" placeholder="Search by User ID, Email, Amount, Status...">
                     <button id="adminSearchWithdrawalHistoryButton"><i class="fas fa-search"></i> Search</button>
+                </div>                <div class="table-scroll-indicator">
+                    <i class="fas fa-arrows-left-right"></i> Scroll horizontally to see all data
                 </div>
                 <div class="table-container scrollable-table max-h-96">
                     <table id="adminWithdrawalHistoryTable">
@@ -307,7 +349,7 @@
                                 <th>Amount</th>
                                 <th>Date</th>
                                 <th>Status</th>
-                                <th>Details</th>
+                                <th class="action-col">Details</th>
                             </tr>
                         </thead>
                         <tbody id="adminWithdrawalHistoryTableBody">
@@ -323,6 +365,8 @@
                  <div class="search-container">
                     <input type="text" id="adminDepositHistorySearchInput" placeholder="Search by User ID, Email, Amount, Status...">
                     <button id="adminSearchDepositHistoryButton"><i class="fas fa-search"></i> Search</button>
+                </div>                <div class="table-scroll-indicator">
+                    <i class="fas fa-arrows-left-right"></i> Scroll horizontally to see all data
                 </div>
                 <div class="table-container scrollable-table max-h-96">
                     <table id="adminDepositHistoryTable">
@@ -334,7 +378,7 @@
                                 <th>Amount</th>
                                 <th>Date</th>
                                 <th>Status</th>
-                                <th>Details</th>
+                                <th class="action-col">Details</th>
                             </tr>
                         </thead>
                         <tbody id="adminDepositHistoryTableBody">
@@ -423,9 +467,8 @@
 
     </main>    <footer>
         <p><i class="far fa-copyright"></i> 2024 QuantumFX. All rights reserved.</p>
-    </footer>
-
-    <script src="js/admin.js"></script>
+    </footer>    <script src="js/admin.js"></script>
+    <script src="js/admin-responsive.js"></script>
     <script>
         // Basic modal close functionality
         function closeModal(modalId) {
