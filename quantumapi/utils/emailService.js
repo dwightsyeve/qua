@@ -66,7 +66,7 @@ exports.sendVerificationEmail = async (to, token, username = '', customContent =
     
     // Create email content
     const frontendUrl = process.env.FRONTEND_BASE_URL || 'http://localhost:3000';
-    const verificationUrl = `${frontendUrl}/api/auth/verify-email/${token}`;
+    const verificationUrl = `https://qua-vagw.onrender.com/api/auth/verify-email/${token}`;
     const subject = 'Verify Your QuantumFX Account';
     
     const htmlContent = `
