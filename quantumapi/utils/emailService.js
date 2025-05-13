@@ -1,88 +1,81 @@
 const nodemailer = require('nodemailer');
-
-
 let transporter;
 
-function setupTransporter() {
-  if (transporter) return;
-
-  transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT || '587'),
-    secure: process.env.EMAIL_SECURE === 'true',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD
-    }
-  });
-}
-
-/**
- * Send email with the specified subject and HTML content
- * @param {string} to - Recipient email address
- * @param {string} subject - Subject of the email
- * @param {string} html - HTML content of the email
- */
-async function sendEmail(to, subject, html) {
-  setupTransporter();
-
-  const mailOptions = {
-    from: `"QuantumFX" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html
-  };
-
+// Initialize transporter with better error handling
+function initializeTransporter() {
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent:', info.messageId);
-    return true;
+    // Check if all required email config is present
+    const host = process.env.EMAIL_HOST;
+    const service = process.env.EMAIL_SERVICE;
+    const port = process.env.EMAIL_PORT;
+    const user = process.env.EMAIL_USER;
+    const pass = process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS; // Check both possible variable names
+
+    console.log('Email Config Check:', { 
+      host: !!host, 
+      service: !!service,
+      port: !!port, 
+      user: !!user, 
+      pass: !!pass 
+    });
+    
+    if (!user || !pass) {
+      console.warn('⚠️ Email credentials missing - email features will be disabled');
+      return null;
+    }
+    
+    const config = {
+      host,
+      port,
+      secure: process.env.EMAIL_SECURE === 'true',
+      auth: {
+        user,
+        pass
+      }
+    };
+    
+    // Add service if provided
+    if (service) {
+      config.service = service;
+    }
+    
+    const emailTransporter = nodemailer.createTransport(config);
+    console.log('✅ Email transporter initialized successfully');
+    return emailTransporter;
   } catch (error) {
-    console.error('Email sending error:', error);
-    return false;
+    console.error('❌ Failed to initialize email transporter:', error);
+    return null;
   }
 }
 
-/**
- * Send verification email or any email content
- * @param {string} email - Recipient email address
- * @param {string} token - Verification token
- * @param {string} name - User's name for personalization
- * @param {string} [customContent] - Custom HTML content for the email
- * @param {string} [customSubject] - Custom subject for the email
- */
-exports.sendVerificationEmail = async (email, token, name, customContent = null, customSubject = null) => {
-  if (!email) {
-    console.error('Email address is required to send an email');
-    throw new Error('Email address is required');
-  }
-  
-  const frontendUrl = 'https://qua-vagw.onrender.com';
-  
-  let subject = customSubject;
-  let htmlContent;
-  
-  // If custom content is provided, use it
-  if (customContent) {
-    htmlContent = customContent;
-    subject = customSubject || 'QuantumFX Notification';
-  } else {
-    // Otherwise generate verification email
-    if (!token) {
-      console.error('Token is required for verification emails');
-      throw new Error('Token is required for verification emails');
+// Initialize the transporter right away
+transporter = initializeTransporter();
+
+exports.sendVerificationEmail = async (to, token, username = '', customContent = null) => {
+  try {
+    // Re-initialize transporter if undefined
+    if (!transporter) {
+      console.log('Attempting to re-initialize email transporter...');
+      transporter = initializeTransporter();
+      
+      if (!transporter) {
+        console.log('Email sending disabled - transporter could not be initialized');
+        return false;
+      }
     }
     
+    // Create email content
+    const frontendUrl = process.env.FRONTEND_BASE_URL || 'http://localhost:3000';
     const verificationUrl = `${frontendUrl}/api/auth/verify-email/${token}`;
-    subject = 'Verify Your QuantumFX Account';
+    const subject = 'Verify Your QuantumFX Account';
     
-    htmlContent = `
+    const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #4f46e5; color: #fff; padding: 20px; text-align: center;">
           <h2>Welcome to QuantumFX</h2>
         </div>
         <div style="padding: 20px; border: 1px solid #eee;">
-          <p>Hello ${name || 'Valued Customer'},</p>
+          <p>Hello ${username || 'Valued Customer'},</p>
           <p>Thank you for registering with QuantumFX. Please verify your email address by clicking the button below:</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${verificationUrl}" style="background-color: #4f46e5; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Verify Email Address</a>
@@ -98,23 +91,42 @@ exports.sendVerificationEmail = async (email, token, name, customContent = null,
         </div>
       </div>
     `;
-  }
   
-  const mailOptions = {
-    from: `"QuantumFX" <${process.env.EMAIL_FROM || 'noreply@quantumfx.com'}>`,
-    to: email,
-    subject: subject,
-    html: htmlContent
-  };
+    const mailOptions = {
+      from: `"QuantumFX" <${process.env.EMAIL_FROM || 'noreply@quantumfx.com'}>`,
+      to: to, // Fixed: using the parameter 'to' instead of undefined 'email'
+      subject: subject,
+      html: htmlContent
+    };
 
-  try {
-    console.log(`Sending email to ${email} with subject "${subject}"`);
-    const result = await transporter.sendMail(mailOptions);
-    console.log(`Email sent successfully to ${email}. Message ID: ${result.messageId}`);
-    return result;
+    try {
+      console.log(`Sending email to ${to} with subject "${subject}"`);
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`✅ Email sent to ${to}:`, info.response);
+      return true;
+    } catch (error) {
+      console.error(`❌ Failed to send email to ${to}:`, error);
+      
+      // Display detailed email settings (without showing full password)
+      let passDisplay = 'NOT SET';
+      if (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS) {
+        passDisplay = '********';
+      }
+      
+      console.error('Email configuration:', {
+        host: process.env.EMAIL_HOST,
+        port: process.env.EMAIL_PORT,
+        service: process.env.EMAIL_SERVICE,
+        secure: process.env.EMAIL_SECURE,
+        user: process.env.EMAIL_USER,
+        pass: passDisplay
+      });
+      
+      return false;
+    }
   } catch (error) {
-    console.error(`Failed to send email to ${email}:`, error);
-    throw error;
+    console.error(`Error in sendVerificationEmail: ${error}`);
+    return false;
   }
 };
 
@@ -125,38 +137,69 @@ exports.sendVerificationEmail = async (email, token, name, customContent = null,
  * @param {string} name - User's name for personalization
  */
 exports.sendPasswordResetEmail = async (email, resetUrl, name) => {
-  const subject = 'Reset Your QuantumFX Password';
+  try {
+    // Re-initialize transporter if undefined
+    if (!transporter) {
+      console.log('Attempting to re-initialize email transporter...');
+      transporter = initializeTransporter();
+      
+      if (!transporter) {
+        console.log('Email sending disabled - transporter could not be initialized');
+        return false;
+      }
+    }
+    
+    const subject = 'Reset Your QuantumFX Password';
 
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="color: #4f46e5;">QuantumFX</h1>
-        <h2>Password Reset</h2>
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #4f46e5;">QuantumFX</h1>
+          <h2>Password Reset</h2>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+          <p>Hello ${name},</p>
+          <p>We received a request to reset your QuantumFX account password. If you didn't make this request, you can safely ignore this email.</p>
+          <p>To reset your password, click the button below:</p>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Reset Password</a>
+        </div>
+
+        <div style="margin-top: 30px; font-size: 14px;">
+          <p>If the button above doesn't work, copy and paste this URL into your browser:</p>
+          <p style="word-break: break-all; color: #4f46e5;">${resetUrl}</p>
+          <p>This password reset link will expire in 1 hour for security reasons.</p>
+        </div>
+
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #666; font-size: 12px;">
+          <p>© ${new Date().getFullYear()} QuantumFX. All rights reserved.</p>
+        </div>
       </div>
+    `;
 
-      <div style="margin-bottom: 30px;">
-        <p>Hello ${name},</p>
-        <p>We received a request to reset your QuantumFX account password. If you didn't make this request, you can safely ignore this email.</p>
-        <p>To reset your password, click the button below:</p>
-      </div>
+    const mailOptions = {
+      from: `"QuantumFX" <${process.env.EMAIL_FROM || 'noreply@quantumfx.com'}>`,
+      to: email,
+      subject: subject,
+      html: htmlContent
+    };
 
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${resetUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Reset Password</a>
-      </div>
+    try {
+      console.log(`Sending password reset email to ${email}`);
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`✅ Password reset email sent to ${email}:`, info.response);
+      return true;
+    } catch (error) {
+      console.error(`❌ Failed to send password reset email to ${email}:`, error);
+      return false;
+    }
+  } catch (error) {
+    console.error(`Error in sendPasswordResetEmail: ${error}`);
+    return false;
+  }
+};
 
-      <div style="margin-top: 30px; font-size: 14px;">
-        <p>If the button above doesn't work, copy and paste this URL into your browser:</p>
-        <p style="word-break: break-all; color: #4f46e5;">${resetUrl}</p>
-        <p>This password reset link will expire in 1 hour for security reasons.</p>
-      </div>
-
-      <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #666; font-size: 12px;">
-        <p>© ${new Date().getFullYear()} QuantumFX. All rights reserved.</p>
-      </div>
-    </div>
-  `;
-
-  return await sendEmail(email, subject, html);
-}
-
-
+exports.initializeEmailTransporter = initializeTransporter;
