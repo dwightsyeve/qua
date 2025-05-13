@@ -237,16 +237,15 @@
                 </ul>
             </div>
         </nav>
-    </header>    <main class="container">
-        <section id="user-management" class="admin-section">
+    </header>    <main class="container">        <section id="user-management" class="admin-section">
             <h2><i class="fas fa-users"></i> User Management</h2>
             <div class="search-container">
                 <input type="text" id="userSearchInput" placeholder="Search users by name or email...">
                 <button id="searchUserButton"><i class="fas fa-search"></i> Search</button>
             </div>
-            <div style="overflow-x: auto;">
+            <div class="table-container scrollable-table max-h-96">
                 <table id="usersTable">
-                    <thead>
+                    <thead class="sticky top-0 bg-white/80 backdrop-blur-sm">
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
@@ -261,16 +260,15 @@
                 </table>
             </div>
         </section>
-        
-        <section id="withdrawal-management" class="admin-section">
+          <section id="withdrawal-management" class="admin-section">
             <h2><i class="fas fa-money-bill-wave"></i> Withdrawal Management</h2>
             <div class="search-container">
                 <input type="text" id="withdrawalSearchInput" placeholder="Search withdrawals by ID or username...">
                 <button id="searchWithdrawalButton"><i class="fas fa-search"></i> Search</button>
             </div>
-            <div style="overflow-x: auto;">
+            <div class="table-container scrollable-table max-h-96">
                 <table id="withdrawalsTable">
-                    <thead>
+                    <thead class="sticky top-0 bg-white/80 backdrop-blur-sm">
                         <tr>
                             <th>ID</th>
                             <th>User</th>

@@ -8,10 +8,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function validatePassword(password) {
-        // At least 8 characters, 1 uppercase, 1 lowercase, 1 number
-        const re = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
-        return re.test(password);
-    }
+        // At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special character
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
+        return regex.test(password);
+      }
     
     function validateUsername(username) {
         // 3-20 characters, letters, numbers, underscores, hyphens

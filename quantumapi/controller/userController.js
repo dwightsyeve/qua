@@ -73,6 +73,7 @@ exports.register = async (req, res) => {
       });
     }
 
+
     // Check if user already exists
     const existingEmail = User.findByEmail(email);
     if (existingEmail) {
@@ -245,18 +246,17 @@ exports.login = async (req, res) => {
 
         // Send email with wallet details
         const emailContent = `
-          <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-            <h2 style="color: #4CAF50;">Welcome, ${user.firstName} ${user.lastName}!</h2>
-            <p>We are excited to inform you that your TRC20 wallet has been successfully created.</p>
-            <div style="background-color: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
-              <p><strong>Wallet Address:</strong> ${trc20WalletData.address}</p>
-              <p><strong>Mobile:</strong> ${user.phoneNumber}</p>
-            </div>
-            <p>If you have any questions, feel free to contact our support team.</p>
-            <p>Thank you for choosing our platform!</p>
-            <p style="color: #888; font-size: 0.9em;">This is an automated message. Please do not reply to this email.</p>
-          </div>
-        `;
+  <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+    <h2 style="color: #4CAF50;">Welcome, ${user.firstName} ${user.lastName}!</h2>
+    <p>We are excited to inform you that your TRC20 wallet has been successfully created.</p>
+    <div style="background-color: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+  <p><strong>Wallet Address:</strong> ${trc20WalletData.trc20_address || trc20WalletData.address || 'Wallet created (address will be visible in your dashboard)'}</p>      <p><strong>Mobile:</strong> ${user.phoneNumber}</p>
+    </div>
+    <p>If you have any questions, feel free to contact our support team.</p>
+    <p>Thank you for choosing our platform!</p>
+    <p style="color: #888; font-size: 0.9em;">This is an automated message. Please do not reply to this email.</p>
+  </div>
+`;
         await sendVerificationEmail(user.email, null, null, emailContent);
       }
   
@@ -380,8 +380,8 @@ function validateEmail(email) {
 }
 
 function validatePassword(password) {
-  // At least 8 chars, 1 uppercase, 1 lowercase, 1 number
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+  // At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special character
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
   return regex.test(password);
 }
 
