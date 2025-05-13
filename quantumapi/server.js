@@ -49,8 +49,10 @@ try {
   createProcessedTransactionsTable();
   Notification.createTable();
   console.log('Database tables initialized');
-  const seedNotifications = require('./seeders/notificationSeeder');
-  seedNotifications();
+  setTimeout(() => {
+    const seedNotifications = require('./seeders/notificationSeeder');
+    seedNotifications();
+  }, 1000);
   
   // Initialize transaction hooks for referral processing
 
