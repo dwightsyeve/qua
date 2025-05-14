@@ -970,33 +970,6 @@ exports.processWithdrawal = async (req, res) => {
 };
 
 
-/**
- * Generate or retrieve deposit address for different networks
- */
-async function generateOrGetAddressForNetwork(userId, network) {
-  // This function would typically call an external service or wallet management system
-  // For now, we'll return a mock address based on userId and network
-  
-  // In a real-world implementation, you might:
-  // 1. Check if user already has an address for this network in your database
-  // 2. If not, generate one using a wallet service or API
-  // 3. Store the new address in your database
-  // 4. Return the address
-  
-  // Mock implementation
-  const networkPrefix = {
-    'BTC': 'bc1',
-    'ETH': '0x',
-    'BSC': '0x',
-    'TRX': 'T',
-    'SOL': 'sol',
-    'TRC20': 'T'
-  }[network.toUpperCase()] || 'addr';
-  
-  const mockAddress = `${networkPrefix}${userId}abcdef123456789${Date.now().toString().slice(-6)}`;
-  
-  return mockAddress;
-}
 
 /**
  * Get user's transaction history filtered by type (withdrawal or deposit)

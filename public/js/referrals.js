@@ -186,9 +186,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     } catch (error) {
         console.error('Error initializing referral data:', error);
         // Fallback to mock data if API calls fail
-        loadMockData();
-        initializeCharts();
-        showNotification('Using demo data. Backend connection failed.', 'info');
+        //loadMockData();
+       // initializeCharts();
+        //showNotification('Using demo data. Backend connection failed.', 'info');
     }
 });
 

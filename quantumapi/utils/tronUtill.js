@@ -176,19 +176,21 @@ async function fetchTronTransactions(address) {
       }
       
       // If we've reached max retries or have a non-timeout error
-      if (attempt >= maxRetries) {
-        console.error('Max retries reached. Using fallback approach.');
+      //if (attempt >= maxRetries) {
+       // console.error('Max retries reached. Using fallback approach.');
         
         // For development, return mock data
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Using mock transaction data for development');
-          return getMockTransactions(address);
-        }
+       // if (process.env.NODE_ENV === 'development') {
+         // console.log('Using mock transaction data for development');
+          //return getMockTransactions(address);
+        //}
         
-        return [];
+       /**
+        * description
+        */ //return [];
       }
     }
-  }
+  
   
   // If we somehow exit the loop without returning, return empty array
   return [];
@@ -350,7 +352,7 @@ exports.getTransactionDetails = async (txHash) => {
  * @param {string} address - The address to generate mock data for
  * @returns {Array} Array of mock transactions
  */
-function getMockTransactions(address) {
+/* function getMockTransactions(address) {
   const currentTimestamp = Date.now();
   
   return [
@@ -382,7 +384,7 @@ function getMockTransactions(address) {
     }
   ];
 }
-
+*/ 
 /**
  * Create a processed_transactions table to track which transactions have been processed
  * This helps prevent double-processing of deposits
@@ -462,7 +464,7 @@ exports.fetchTronTransactions = fetchTronTransactions;
 exports.processDeposit = processDeposit;
 exports.getProcessedTransactionIds = getProcessedTransactionIds;
 exports.markTransactionAsProcessed = markTransactionAsProcessed;
-exports.getMockTransactions = getMockTransactions;
+//exports.getMockTransactions = getMockTransactions;
 
 /**
  * Check if a transaction is a valid USDT deposit

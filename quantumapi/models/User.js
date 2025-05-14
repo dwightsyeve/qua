@@ -239,46 +239,61 @@ static findByUsername(username) {
     return stmt.run(...params);
   }
 
+  // ...existing code...
   static updateSettings(userId, settingsData) {
+    console.log(`[User.updateSettings] Called for userId: ${userId}`);
+    console.log('[User.updateSettings] Received settingsData:', JSON.stringify(settingsData, null, 2));
+
     const flatSettings = {};
     if (settingsData.notifications) {
-        if (settingsData.notifications.emailEnabled !== undefined) flatSettings.notifications_emailEnabled = settingsData.notifications.emailEnabled ? 1:0;
-        if (settingsData.notifications.investmentUpdates !== undefined) flatSettings.notifications_investmentUpdates = settingsData.notifications.investmentUpdates ? 1:0;
-        if (settingsData.notifications.balanceChanges !== undefined) flatSettings.notifications_balanceChanges = settingsData.notifications.balanceChanges ? 1:0;
-        if (settingsData.notifications.referralActivity !== undefined) flatSettings.notifications_referralActivity = settingsData.notifications.referralActivity ? 1:0;
-    }
-    if (settingsData.wallet) {
-        if (settingsData.wallet.autoReinvest !== undefined) flatSettings.wallet_autoReinvest = settingsData.wallet.autoReinvest ? 1:0;
+      flatSettings.notifications_emailEnabled = settingsData.notifications.emailEnabled ? 1 : 0;
+      flatSettings.notifications_investmentUpdates = settingsData.notifications.investmentUpdates ? 1 : 0;
+      flatSettings.notifications_balanceChanges = settingsData.notifications.balanceChanges ? 1 : 0;
+      flatSettings.notifications_referralActivity = settingsData.notifications.referralActivity ? 1 : 0;
     }
     if (settingsData.appearance) {
-        if (settingsData.appearance.darkMode !== undefined) flatSettings.appearance_darkMode = settingsData.appearance.darkMode ? 1:0;
-        if (settingsData.appearance.language !== undefined) flatSettings.appearance_language = settingsData.appearance.language;
+      flatSettings.appearance_darkMode = settingsData.appearance.darkMode ? 1 : 0;
+      flatSettings.appearance_language = settingsData.appearance.language;
+    }
+    if (settingsData.wallet) {
+      flatSettings.wallet_autoReinvest = settingsData.wallet.autoReinvest ? 1 : 0;
+    }
+    if (typeof settingsData.twoFactorEnabled !== 'undefined') {
+        flatSettings.twoFactorEnabled = settingsData.twoFactorEnabled ? 1 : 0;
     }
     if (settingsData.privacy) {
-        if (settingsData.privacy.activityLogsEnabled !== undefined) flatSettings.security_activityLogsEnabled = settingsData.privacy.activityLogsEnabled ? 1:0;
-        if (settingsData.privacy.publicProfile !== undefined) flatSettings.privacy_publicProfile = settingsData.privacy.publicProfile ? 1:0;
+        flatSettings.privacy_activityLogsEnabled = settingsData.privacy.activityLogsEnabled ? 1 : 0;
+        flatSettings.privacy_publicProfile = settingsData.privacy.publicProfile ? 1 : 0;
     }
-    if (settingsData.twoFactorEnabled !== undefined) {
-        flatSettings.security_twoFactorEnabled = settingsData.twoFactorEnabled ? 1:0;
-    }
-    if (settingsData.security_activityLogsEnabled !== undefined) {
-        flatSettings.security_activityLogsEnabled = settingsData.security_activityLogsEnabled ? 1:0;
+    // Add other settings as needed
+
+    console.log('[User.updateSettings] Flattened settings for DB:', JSON.stringify(flatSettings, null, 2));
+
+
+    if (Object.keys(flatSettings).length === 0) {
+      console.log('[User.updateSettings] No valid settings to update.');
+      return { changes: 0 };
     }
 
-    let setClauses = [];
-    let params = [];
-    for (const key in flatSettings) {
-        setClauses.push(`${key} = ?`);
-        params.push(flatSettings[key]);
-    }
-
-    if (setClauses.length === 0) return { changes: 0 };
-
-    const stmt = db.prepare(`UPDATE users SET ${setClauses.join(', ')} WHERE id = ?`);
+    const setClauses = Object.keys(flatSettings).map(key => `${key} = ?`).join(', ');
+    const params = Object.values(flatSettings);
     params.push(userId);
-    return stmt.run(...params);
-  }
 
+    const sql = `UPDATE users SET ${setClauses} WHERE id = ?`;
+    console.log(`[User.updateSettings] Executing SQL: ${sql}`);
+    console.log('[User.updateSettings] With Params:', JSON.stringify(params, null, 2));
+
+    try {
+      const stmt = db.prepare(sql);
+      const info = stmt.run(params);
+      console.log('[User.updateSettings] DB operation info:', JSON.stringify(info, null, 2));
+      return info; // { changes: number, lastInsertRowid: number }
+    } catch (error) {
+      console.error('[User.updateSettings] SQL Error:', error);
+      throw error; // Re-throw to be caught by controller
+    }
+  }
+// ...existing code...
   static updateCookiePreferences(userId, cookieData) {
     const { performance, functionality, marketing } = cookieData;
     const stmt = db.prepare('UPDATE users SET cookiePreferences_performance = ?, cookiePreferences_functionality = ?, cookiePreferences_marketing = ? WHERE id = ?');

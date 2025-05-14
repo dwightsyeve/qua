@@ -43,16 +43,22 @@ class Milestone {
         // Check if user already has milestones initialized
         const existingMilestones = db.prepare('SELECT COUNT(*) as count FROM milestones WHERE userId = ?').get(userId);
         
-        // Only initialize if no milestones exist
-        if (existingMilestones.count === 0) {
+         // Only initialize if no milestones exist
+         if (existingMilestones.count === 0) {
           // Level 1 milestone: 25 active referrals
+          // Columns now match the createTable schema.
+          // 'achieved' defaults to FALSE in schema, 'achievedAt' will be NULL by default.
           db.prepare(`
-            INSERT OR IGNORE INTO milestones (userId, level, target, reward, rewardAmount, progress, completed, claimedAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-          `).run(userId, 1, 25, 'USDT', 250, 0, 0, null);
+            INSERT OR IGNORE INTO milestones (userId, level, target, reward)
+            VALUES (?, ?, ?, ?)
+          `).run(userId, 1, 25, 250); // Removed progress, completed, claimedAt
           
           // Add more milestone levels as needed
-          // Level 2, 3, etc.
+          // Example for a Level 2, if you define it:
+          // db.prepare(`
+          //   INSERT OR IGNORE INTO milestones (userId, level, target, reward)
+          //   VALUES (?, ?, ?, ?)
+          // `).run(userId, 2, 50, 500); // Assuming target 50, reward 500
         }
       })();
       

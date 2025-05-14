@@ -414,12 +414,12 @@ function closeProfileModal() {
  */
 async function initToggleSwitches() {
     const settings = await fetchUserData(API_ENDPOINTS.getUserSettings);
-    if (!settings) {
+  /*  if (!settings) {
         console.error("Could not load user settings for toggles.");
         // Optionally set default states or show error
         return;
     }
-
+*/
     const toggles = {
         'twoFactorToggle': settings.twoFactorEnabled || false,
         'emailNotificationsToggle': settings.notifications?.emailEnabled || true,
@@ -468,6 +468,10 @@ async function initToggleSwitches() {
                 } else {
                     // Revert toggle state on failure
                     e.target.checked = !newState; 
+                    // If the failed update was for dark mode, revert the body class as well
+                    if (settingKey === 'darkMode') {
+                        document.body.classList.toggle('dark-mode', !newState);
+                    }
                 }
             });
 

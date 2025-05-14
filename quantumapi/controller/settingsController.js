@@ -49,22 +49,30 @@ exports.getUserSettings = async (req, res) => {
     }
 };
 
+// ...existing code...
 exports.updateUserSettings = async (req, res) => {
     try {
         const userId = req.user.id;
-        const settingsData = req.body; // e.g. { appearance: { darkMode: true }, notifications: { emailEnabled: false } }
+        const settingsData = req.body; 
+
+        console.log(`[SettingsController] Attempting to update settings for userId: ${userId}`);
+        console.log('[SettingsController] Received settingsData:', JSON.stringify(settingsData, null, 2));
 
         // The User.updateSettings method is designed to take flattened keys or a structured object
         // Let's ensure the structure matches what User.updateSettings expects or adapt here
         // Based on User.updateSettings, it expects keys like 'notifications_emailEnabled' or structured like frontend
         
         const result = User.updateSettings(userId, settingsData);
+        console.log('[SettingsController] Result from User.updateSettings:', JSON.stringify(result, null, 2));
+
 
         if (result.changes > 0) {
+            console.log('[SettingsController] Settings updated successfully in DB. Fetching updated user.');
             const updatedUser = await User.findById(userId);
             const updatedSettings = extractUserSettings(updatedUser);
             res.json({ success: true, message: 'Settings updated successfully.', settings: updatedSettings });
         } else {
+            console.log('[SettingsController] No changes made to settings in DB (result.changes was 0 or less). Fetching current user.');
             // This might happen if the data sent doesn't actually change any values
             // or if User.updateSettings didn't find matching keys to update.
             // Consider if this should be an error or a "no changes made" success.
@@ -73,11 +81,11 @@ exports.updateUserSettings = async (req, res) => {
             res.json({ success: true, message: 'No changes applied to settings or settings are already up to date.', settings: currentSettings });
         }
     } catch (error) {
-        console.error('Error updating user settings:', error);
+        console.error('[SettingsController] Error updating user settings:', error);
         res.status(500).json({ success: false, message: 'Failed to update settings.' });
     }
 };
-
+// ...existing code...
 exports.getCookiePreferences = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
