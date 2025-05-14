@@ -58,6 +58,28 @@
             background-color: #f1f5f9;
         }
         
+        .profile-picture {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #6366f1;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .profile-upload-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: #6366f1;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
         .notification-item.unread {
             border-left-color: var(--accent-color);
         }
@@ -209,9 +231,12 @@
             
             <div class="p-4 mb-6">
                 <div class="flex items-center justify-center mb-4">
-                    <div class="relative">
-                        <img src="https://ui-avatars.com/api/?name=John+Doe&background=6366f1&color=fff" class="rounded-full w-20 h-20 border-4 border-indigo-600" alt="User Avatar">
-                        <span class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
+                    <div class="relative mb-4 md:mb-0 md:mr-6">
+                        <img id="profilePictureDisplay" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Profile Picture" class="profile-picture">
+                        <label for="profilePictureUpload" class="profile-upload-btn">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                        <input type="file" id="profilePictureUpload" accept="image/*" class="hidden">
                     </div>
                 </div>
                 <h3 class="text-center font-semibold">John Doe</h3>
@@ -326,7 +351,7 @@
                         </div>
                         <div class="bg-green bg-opacity-20 rounded-lg p-4">
                             <h3 class="text-sm uppercase mb-1 text-indigo-100">Pending Balance</h3>
-                            <div class="text-2xl font-bold">$0.09</div>
+                            <div class="text-2xl font-bold">$0.0</div>
                             <div class="text-xs mt-2 flex items-center">
                                 <i class="fas fa-clock mr-1"></i>
                                 <span>Processing transactions</span>
@@ -502,5 +527,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/depowth.js"></script>
+    <script src="js/settings.js"></script>
 </body>
 </html>

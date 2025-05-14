@@ -502,10 +502,10 @@ function formatCurrency(value) {
 // Mock data for demonstration - used as fallback when API fails
 function loadMockData() {
     // Sample data for referrals stats
-    document.getElementById('totalReferrals').textContent = '12';
-    document.getElementById('activeReferrals').textContent = '8';
-    document.getElementById('totalEarnings').textContent = '$412.50';
-    document.getElementById('pendingCommissions').textContent = '$85.00';
+    document.getElementById('totalReferrals').textContent = '0';
+    document.getElementById('activeReferrals').textContent = '0';
+    document.getElementById('totalEarnings').textContent = '$0';
+    document.getElementById('pendingCommissions').textContent = '$0.00';
     
     // Store stats for charts
     window.referralStats = {

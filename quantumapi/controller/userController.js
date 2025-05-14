@@ -164,35 +164,172 @@ exports.verifyEmail = async (req, res) => {
     const user = User.findByVerificationToken(token);
     
     if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid or expired verification token'
-      });
+      return res.status(400).send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Verification Failed - QuantumFX</title>
+            <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+        </head>
+        <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full animate__animated animate__fadeIn">
+                <div class="text-center mb-6">
+                    <div class="inline-block p-3 rounded-full bg-red-100 text-red-500 mb-4">
+                        <i class="fas fa-times-circle text-4xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-800">Verification Failed</h1>
+                    <p class="text-gray-600 mt-2">Invalid or expired verification token</p>
+                </div>
+                
+                <div class="text-center mt-8">
+                    <p class="text-gray-500 mb-4">Please request a new verification email or contact support.</p>
+                    <a href="/auth.html" class="inline-block bg-indigo-600 text-white px-6 py-3 rounded-md font-medium hover:bg-indigo-700 transition duration-200">
+                        Return to Login
+                    </a>
+                </div>
+            </div>
+        </body>
+        </html>
+      `);
     }
     
     // Update user verification status
     const success = User.verifyEmail(user.email, token);
     
     if (success) {
-      res.status(200).json({
-        success: true,
-        message: 'Email verified successfully! You can now log in.'
-      });
+      res.status(200).send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Email Verified - QuantumFX</title>
+            <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+            <script>
+                let countdown = 3;
+                window.onload = function() {
+                    const countdownEl = document.getElementById('countdown');
+                    const interval = setInterval(function() {
+                        countdown--;
+                        countdownEl.textContent = countdown;
+                        if (countdown <= 0) {
+                            clearInterval(interval);
+                            window.location.href = '/auth.html';
+                        }
+                    }, 1000);
+                };
+            </script>
+        </head>
+        <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full animate__animated animate__fadeIn">
+                <div class="text-center mb-6">
+                    <div class="inline-block p-3 rounded-full bg-green-100 text-green-500 mb-4">
+                        <i class="fas fa-check-circle text-4xl animate__animated animate__bounceIn"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-800">Email Verified Successfully!</h1>
+                    <p class="text-gray-600 mt-2">Your account has been activated</p>
+                </div>
+                
+                <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-green-500"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-green-700">
+                                You can now log in with your email and password.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-gray-500 mb-4">Redirecting to login page in <span id="countdown" class="font-bold text-indigo-600">3</span> seconds...</p>
+                    <a href="/auth.html" class="inline-block bg-indigo-600 text-white px-6 py-3 rounded-md font-medium hover:bg-indigo-700 transition duration-200">
+                        Login Now
+                    </a>
+                </div>
+                
+                <div class="mt-8 pt-4 border-t border-gray-200 text-center text-gray-500 text-sm">
+                    <p>&copy; ${new Date().getFullYear()} QuantumFX. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+      `);
     } else {
-      res.status(400).json({
-        success: false,
-        message: 'Failed to verify email. Please try again.'
-      });
+      res.status(400).send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Verification Error - QuantumFX</title>
+            <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+        </head>
+        <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full animate__animated animate__fadeIn">
+                <div class="text-center mb-6">
+                    <div class="inline-block p-3 rounded-full bg-yellow-100 text-yellow-500 mb-4">
+                        <i class="fas fa-exclamation-triangle text-4xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-800">Verification Error</h1>
+                    <p class="text-gray-600 mt-2">Failed to verify email. Please try again.</p>
+                </div>
+                
+                <div class="text-center mt-8">
+                    <p class="text-gray-500 mb-4">If the problem persists, please contact our support team.</p>
+                    <a href="/auth.html" class="inline-block bg-indigo-600 text-white px-6 py-3 rounded-md font-medium hover:bg-indigo-700 transition duration-200">
+                        Return to Login
+                    </a>
+                </div>
+            </div>
+        </body>
+        </html>
+      `);
     }
   } catch (error) {
     console.error('Email verification error:', error);
-    res.status(500).json({
-      success: false, 
-      message: 'Email verification failed. Please try again.'
-    });
+    res.status(500).send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Server Error - QuantumFX</title>
+          <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+          <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+      </head>
+      <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+          <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+              <div class="text-center mb-6">
+                  <div class="inline-block p-3 rounded-full bg-red-100 text-red-500 mb-4">
+                      <i class="fas fa-exclamation-circle text-4xl"></i>
+                  </div>
+                  <h1 class="text-2xl font-bold text-gray-800">Server Error</h1>
+                  <p class="text-gray-600 mt-2">Something went wrong on our end.</p>
+              </div>
+              
+              <div class="text-center mt-8">
+                  <p class="text-gray-500 mb-4">Please try again later or contact our support team.</p>
+                  <a href="/auth.html" class="inline-block bg-indigo-600 text-white px-6 py-3 rounded-md font-medium hover:bg-indigo-700 transition duration-200">
+                      Return to Login
+                  </a>
+              </div>
+          </div>
+      </body>
+      </html>
+    `);
   }
 };
-
 // Controller for user login
 exports.login = async (req, res) => {
     try {
@@ -747,7 +884,7 @@ exports.requestPasswordReset = async (req, res) => {
     // Generate reset URL
     const baseUrl = process.env.NODE_ENV === 'production' 
       ? 'https://qua-vagw.onrender.com' 
-      : 'https://qua-vagw.onrender.com';
+      : 'http://localhost:3000';  
     
     const resetUrl = `${baseUrl}/reset-password.html?token=${resetToken}&email=${encodeURIComponent(email)}`;
     

@@ -37,26 +37,28 @@ class Milestone {
    */
   static initializeForUser(userId) {
     try {
-      const milestones = [
-        { level: 1, reward: 250, target: 25 }, // 25 referrals
-        { level: 2, reward: 250, target: 50 }  // 50 referrals
-      ];
-
-      const stmt = db.prepare(`
-        INSERT INTO milestones (userId, level, reward, target)
-        VALUES (?, ?, ?, ?)
-      `);
-
-      const insertMilestone = db.transaction((milestones) => {
-        for (const milestone of milestones) {
-          stmt.run(userId, milestone.level, milestone.reward, milestone.target);
+      
+      // Begin transaction
+      db.transaction(() => {
+        // Check if user already has milestones initialized
+        const existingMilestones = db.prepare('SELECT COUNT(*) as count FROM milestones WHERE userId = ?').get(userId);
+        
+        // Only initialize if no milestones exist
+        if (existingMilestones.count === 0) {
+          // Level 1 milestone: 25 active referrals
+          db.prepare(`
+            INSERT OR IGNORE INTO milestones (userId, level, target, reward, rewardAmount, progress, completed, claimedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `).run(userId, 1, 25, 'USDT', 250, 0, 0, null);
+          
+          // Add more milestone levels as needed
+          // Level 2, 3, etc.
         }
-      });
-
-      insertMilestone(milestones);
+      })();
+      
       return true;
     } catch (error) {
-      console.error('Error initializing milestones:', error);
+      console.error(`Error initializing milestones: ${error}`);
       return false;
     }
   }

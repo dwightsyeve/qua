@@ -63,13 +63,34 @@ exports.sendVerificationEmail = async (to, token, username = '', customContent =
         return false;
       }
     }
+
+    let htmlContent;
+    let subject;
     
-    // Create email content
-    const frontendUrl = process.env.FRONTEND_BASE_URL || 'http://localhost:3000';
-    const verificationUrl = `https://qua-vagw.onrender.com/api/auth/verify-email/${token}`;
-    const subject = 'Verify Your QuantumFX Account';
+    if (customContent) {
+      // If custom content is provided, use it directly without token validation
+      htmlContent = customContent;
+      subject = 'QuantumFX Notification';
+    } else {
     
-    const htmlContent = `
+      // Create email content with proper base URL
+      const baseUrl = process.env.NODE_ENV === 'production'
+        ? 'https://qua-vagw.onrender.com'
+        : 'http://localhost:3000'; // Or use a different dev URL if needed
+    
+      // Check if token is valid before creating the URL
+      if (!token) {
+        console.error('Invalid verification token: null or undefined');
+        return false;
+      }
+    
+    
+      // Create email content
+      const frontendUrl = process.env.FRONTEND_BASE_URL || 'http://localhost:3000';
+      const verificationUrl = `${baseUrl}/api/auth/verify-email/${token}`;
+      const subject = 'Verify Your QuantumFX Account';
+    
+      const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #4f46e5; color: #fff; padding: 20px; text-align: center;">
           <h2>Welcome to QuantumFX</h2>
@@ -91,7 +112,7 @@ exports.sendVerificationEmail = async (to, token, username = '', customContent =
         </div>
       </div>
     `;
-  
+    }
     const mailOptions = {
       from: `"QuantumFX" <${process.env.EMAIL_FROM || 'noreply@quantumfx.com'}>`,
       to: to, // Fixed: using the parameter 'to' instead of undefined 'email'
