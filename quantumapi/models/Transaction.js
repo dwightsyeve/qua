@@ -56,14 +56,15 @@ class Transaction {
    * @param {object} transaction - Transaction object
    * @returns {object} Created transaction
    */
+  // ...existing code...
   static create(transaction) {
     try {
-      const { userId, type, amount, status, details, txHash = null, notes = null, isAdminAction = 0 } = transaction; // Added isAdminAction
+      const { userId, type, amount, status, details, txHash = null, notes = null, isAdminAction = false } = transaction; // Default isAdminAction to false
       
       const stmt = db.prepare(`
         INSERT INTO transactions (userId, type, amount, status, details, txHash, notes, isAdminAction, createdAt, updatedAt)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, STRFTIME('%Y-%m-%d %H:%M:%S', 'NOW'), STRFTIME('%Y-%m-%d %H:%M:%S', 'NOW'))
-      `); // Added isAdminAction to query
+      `);
       
       const result = stmt.run(
         userId,
@@ -73,19 +74,19 @@ class Transaction {
         details,
         txHash,
         notes,
-        isAdminAction // Added isAdminAction to parameters
+        isAdminAction ? 1 : 0 // Convert boolean to integer (1 for true, 0 for false)
       );
       
       return {
         id: result.lastInsertRowid,
-        userId, type, amount, status, details, txHash, notes, isAdminAction // Added isAdminAction to return
+        userId, type, amount, status, details, txHash, notes, isAdminAction: isAdminAction // Return the original boolean or the 0/1 based on preference
       };
     } catch (error) {
       console.error('Error creating transaction:', error);
       throw error;
     }
   }
-
+// ...existing code...
   static getByUserIdAndType(userId, type) {
     try {
       const query = `
