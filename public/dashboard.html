@@ -321,58 +321,59 @@
             <!-- Status Display Section -->
             <section class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Total Balance Card -->
-                <div class="gradient-card p-5 col-span-1 md:col-span-3 relative overflow-hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-semibold">Balance Overview</h2>
-                        <div>
-                            <span class="text-xs bg-white bg-opacity-30 px-2 py-1 rounded-full">
-                                <i class="fas fa-clock mr-1"></i>
-                                Last updated: <span id="last-updated">May 2, 2025 09:45 AM</span>
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-green bg-opacity-20 rounded-lg p-4">
-                            <h3 class="text-sm uppercase mb-1 text-indigo-100">Total Balance</h3>
-                            <div class="text-2xl font-bold">$0</div>
-                            <div class="text-xs mt-2 flex items-center">
-                                <i class="fas fa-arrow-up mr-1 text-green-300"></i>
-                                <span>+14.5% this month</span>
-                            </div>
-                        </div>
-                        <div class="bg-blue bg-opacity-20 rounded-lg p-4">
-                            <h3 class="text-sm uppercase mb-1 text-indigo-100">Available Balance</h3>
-                            <div class="text-2xl font-bold" id="availableBalance"></div>
-                            <div class="text-xs mt-2 flex items-center">
-                                <i class="fas fa-unlock mr-1"></i>
-                                <span>Available for withdrawal</span>
-                            </div>
-                        </div>
-                        <div class="bg-green bg-opacity-20 rounded-lg p-4">
-                            <h3 class="text-sm uppercase mb-1 text-indigo-100">Pending Balance</h3>
-                            <div class="text-2xl font-bold">$0.0</div>
-                            <div class="text-xs mt-2 flex items-center">
-                                <i class="fas fa-clock mr-1"></i>
-                                <span>Processing transactions</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-6 flex flex-wrap gap-3">
-                        <button href="investment.html" class="bg-white text-indigo-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition">
-                            <i class="fas fa-plus mr-2"></i> New Investment
-                        </button>
-                        <button onclick="showDepositPage()" class="bg-white text-indigo-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition">
-                            <i class="fas fa-upload mr-2"></i> Deposit
-                        </button>
-                        <button onclick="showWithdrawPage()" class="bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition">
-                            <i class="fas fa-download mr-2"></i> Withdraw
-                        </button>
-                    </div>
-                    
-                    <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-white bg-opacity-10 rounded-full"></div>
-                </div>
+                <!-- Balance Overview Section -->
+<div class="gradient-card p-5 col-span-1 md:col-span-3 relative overflow-hidden">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-semibold">Balance Overview</h2>
+        <div>
+            <span class="text-xs bg-white bg-opacity-30 px-2 py-1 rounded-full">
+                <i class="fas fa-clock mr-1"></i>
+                Last updated: <span id="last-updated">Loading...</span>
+            </span>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-green bg-opacity-20 rounded-lg p-4">
+            <h3 class="text-sm uppercase mb-1 text-indigo-100">Total Balance</h3>
+            <div class="text-2xl font-bold" data-balance="total">$0.00</div>
+            <div class="text-xs mt-2 flex items-center">
+                <i class="fas fa-arrow-up mr-1 text-green-300"></i>
+                <span>+14.5% this month</span>
+            </div>
+        </div>
+        <div class="bg-blue bg-opacity-20 rounded-lg p-4">
+            <h3 class="text-sm uppercase mb-1 text-indigo-100">Available Balance</h3>
+            <div class="text-2xl font-bold" data-balance="available">$0.00</div>
+            <div class="text-xs mt-2 flex items-center">
+                <i class="fas fa-unlock mr-1"></i>
+                <span>Available for withdrawal</span>
+            </div>
+        </div>
+        <div class="bg-green bg-opacity-20 rounded-lg p-4">
+            <h3 class="text-sm uppercase mb-1 text-indigo-100">Pending Balance</h3>
+            <div class="text-2xl font-bold" data-balance="pending">$0.00</div>
+            <div class="text-xs mt-2 flex items-center">
+                <i class="fas fa-clock mr-1"></i>
+                <span>Processing transactions</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-6 flex flex-wrap gap-3">
+        <a href="investnow.html" class="bg-white text-indigo-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition">
+            <i class="fas fa-plus mr-2"></i> New Investment
+        </a>
+        <button onclick="showDepositPage()" class="bg-white text-indigo-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition">
+            <i class="fas fa-upload mr-2"></i> Deposit
+        </button>
+        <button onclick="showWithdrawPage()" class="bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition">
+            <i class="fas fa-download mr-2"></i> Withdraw
+        </button>
+    </div>
+    
+    <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-white bg-opacity-10 rounded-full"></div>
+</div>
             </section>
 
             <!-- Investment Status Section -->

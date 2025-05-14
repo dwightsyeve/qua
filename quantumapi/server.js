@@ -42,7 +42,7 @@ app.use(express.urlencoded({ extended: true }));
 try {
   User.createTable();
   Wallet.createTable();
-  Transaction.createTable();
+  Transaction.ensureSchema();
   Referral.createTable();  // Initialize referral table
   Milestone.createTable();  // Initialize milestone table
   Investment.createTable(); // Initialize investment table

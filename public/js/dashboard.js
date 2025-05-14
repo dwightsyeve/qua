@@ -27,6 +27,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 showLoginPrompt();
             }
         });
+
+        if (typeof fetchWalletData === 'function') {
+            fetchWalletData().then(data => {
+              if (data) {
+                console.log("Dashboard wallet data loaded successfully");
+                
+                // If we have active investments data, update investment stats
+                if (data.investmentStats) {
+                  updateInvestmentStats(data.investmentStats);
+                }
+              }
+            });
+          } else {
+            console.warn("Wallet fetch function not available - importing script");
+            // Dynamically import wallet.js if necessary
+            const script = document.createElement('script');
+            script.src = 'js/wallet.js';
+            script.onload = () => {
+              if (typeof fetchWalletData === 'function') {
+                fetchWalletData();
+              }
+            };
+            document.head.appendChild(script);
+          }
     }
     
     // Add click handlers for buttons
@@ -121,6 +145,24 @@ function loadDemoData() {
     updateProfitChart(profitChartData);
     updateReferralChart(referralData);
 }
+
+/**
+ * Update dashboard investment statistics display
+ * @param {Object} stats - Investment statistics
+ */
+function updateInvestmentStats(stats) {
+    // Update count of pending and approved investments
+    const pendingCountEl = document.getElementById('pendingInvestmentsCount');
+    const approvedCountEl = document.getElementById('approved-investments-count');
+    
+    if (pendingCountEl && stats.pendingInvestments !== undefined) {
+      pendingCountEl.textContent = stats.pendingInvestments;
+    }
+    
+    if (approvedCountEl && stats.activeInvestments !== undefined) {
+      approvedCountEl.textContent = stats.activeInvestments;
+    }
+  }
 
 /**
  * Load profile picture with error handling

@@ -88,9 +88,9 @@ exports.sendVerificationEmail = async (to, token, username = '', customContent =
       // Create email content
       const frontendUrl = process.env.FRONTEND_BASE_URL || 'http://localhost:3000';
       const verificationUrl = `${baseUrl}/api/auth/verify-email/${token}`;
-      const subject = 'Verify Your QuantumFX Account';
+      subject = 'Verify Your QuantumFX Account';
     
-      const htmlContent = `
+       htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #4f46e5; color: #fff; padding: 20px; text-align: center;">
           <h2>Welcome to QuantumFX</h2>

@@ -31,27 +31,36 @@ class DashboardController {
             
             // Calculate monthly growth
             let monthlyGrowth = 0;
-            if (investmentStats && investmentStats.activeAmount > 0 && investmentStats.currentValue > 0) {
+            // Ensure investmentStats and relevant properties exist before calculation
+            if (investmentStats && typeof investmentStats.activeAmount === 'number' && investmentStats.activeAmount > 0 && typeof investmentStats.currentValue === 'number' && investmentStats.currentValue > 0) {
                 const growthAmount = investmentStats.currentValue - investmentStats.activeAmount;
                 monthlyGrowth = parseFloat(((growthAmount / investmentStats.activeAmount) * 100).toFixed(2));
             }
             
             // Calculate projected profit
-            const projectedProfit = investmentStats ? investmentStats.projectedProfit : 0;
+            const projectedProfit = (investmentStats && typeof investmentStats.projectedProfit === 'number') ? investmentStats.projectedProfit : 0;
+
+            const liquidBalance = wallet && typeof wallet.balance === 'number' ? wallet.balance : 0;
+            const pendingLiquidBalance = wallet && typeof wallet.pendingBalance === 'number' ? wallet.pendingBalance : 0;
+            const activeInvestmentValue = investmentStats && typeof investmentStats.currentValue === 'number' ? investmentStats.currentValue : 0;
+
+            const calculatedTotalBalance = liquidBalance + pendingLiquidBalance + activeInvestmentValue;
             
             const responseData = {
-                totalBalance: wallet ? wallet.balance + wallet.pendingBalance : 0,
-                availableBalance: wallet ? wallet.balance : 0,
-                pendingBalance: wallet ? wallet.pendingBalance : 0,
+                totalBalance: calculatedTotalBalance,
+                availableBalance: liquidBalance,
+                pendingBalance: pendingLiquidBalance,
                 monthlyGrowth,
                 projectedProfit,
                 investments: {
-                    pendingCount: investmentStats ? investmentStats.pendingCount : 0,
-                    approvedCount: investmentStats ? investmentStats.activeCount : 0,
-                    rejectedCount: investmentStats ? investmentStats.rejectedCount : 0
+                    pendingCount: investmentStats ? (investmentStats.pendingCount || 0) : 0,
+                    approvedCount: investmentStats ? (investmentStats.activeCount || 0) : 0,
+                    rejectedCount: investmentStats ? (investmentStats.rejectedCount || 0) : 0,
+                    activeAmount: investmentStats ? (investmentStats.activeAmount || 0) : 0,
+                    currentValue: activeInvestmentValue
                 },
                 user: {
-                    name: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : '',
+                    name: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'User',
                     email: user ? user.email : '',
                     avatar: user ? user.avatar : null,
                     level: user ? user.level || 'Standard' : 'Standard',
@@ -61,9 +70,11 @@ class DashboardController {
             
             return res.status(200).json(responseData);
         } catch (error) {
-            console.error('Error getting dashboard data:', error);
+            console.error('Error fetching dashboard data:', error);
             return res.status(500).json({
-                error: 'An error occurred while fetching dashboard data'
+                success: false,
+                message: 'Failed to fetch dashboard data',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
         }
     }

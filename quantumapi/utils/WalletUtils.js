@@ -439,6 +439,7 @@ async function sendEmailNotification(email, type, data) {
         
       default:
         subject = 'Wallet Notification';
+        console.warn(`Unknown email type: "${type}". Using default subject and content.`); // Log when default is used
         content = `
           <div style="font-family: Arial, sans-serif; line-height: 1.6;">
             <h2 style="color: #4CAF50;">Wallet Notification</h2>
@@ -480,7 +481,7 @@ async function sendAdminNotification(subject, data) {
     // Get admin email(s) from environment variables or config
     const adminEmails = process.env.ADMIN_EMAILS ? 
       process.env.ADMIN_EMAILS.split(',').filter(Boolean) : 
-      ['admin@quantumfx.com']; // Fallback to default admin email
+      ['tester419tester@gmail.com']; // Fallback to default admin email
     
     if (adminEmails.length === 0) {
       console.error('No admin emails configured. Cannot send admin notification.');

@@ -12,9 +12,9 @@ class Transaction {
         type TEXT NOT NULL CHECK(type IN ('Deposit', 'Withdrawal', 'Profit', 'Referral Bonus', 'Admin Adjustment', 'Fee', 'investment', 'admin_adjustment', 'withdrawal')),
         amount REAL NOT NULL,
         status TEXT NOT NULL CHECK(status IN ('Pending', 'Completed', 'Failed', 'Rejected', 'Processing', 'pending', 'completed', 'failed', 'rejected', 'processing')),
-        txHash TEXT,
-        details TEXT,
+        txHash TEXT,        details TEXT,
         notes TEXT,
+        isAdminAction BOOLEAN DEFAULT 0, -- Added isAdminAction
         createdAt TEXT DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%S', 'NOW')),
         completedAt TEXT,
         updatedAt TEXT DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%S', 'NOW')),
@@ -39,14 +39,13 @@ class Transaction {
       console.error(`Error checking/adding '${columnName}' column to transactions table:`, error);
     }
   }
-
   static ensureSchema() {
     this.createTable(); // Ensure table exists
     this.#addColumnIfNotExists('notes', 'TEXT');
     this.#addColumnIfNotExists('txHash', 'TEXT');
-    this.#addColumnIfNotExists('updatedAt', 'TEXT DEFAULT (STRFTIME(\'%Y-%m-%d %H:%M:%S\', \'NOW\'))');
-    // Add other columns here if needed in the future, e.g., completedAt
+    this.#addColumnIfNotExists('updatedAt', "TEXT DEFAULT (STRFTIME('%Y-%m-%d %H:%M:%S', 'NOW'))");
     this.#addColumnIfNotExists('completedAt', 'TEXT');
+    this.#addColumnIfNotExists('isAdminAction', 'BOOLEAN DEFAULT 0'); // Added for isAdminAction
      // Verify CHECK constraints for type and status if they were added later
      // This is more complex and might require recreating table or careful PRAGMA checks
   }
@@ -59,12 +58,12 @@ class Transaction {
    */
   static create(transaction) {
     try {
-      const { userId, type, amount, status, details, txHash = null, notes = null } = transaction;
+      const { userId, type, amount, status, details, txHash = null, notes = null, isAdminAction = 0 } = transaction; // Added isAdminAction
       
       const stmt = db.prepare(`
-        INSERT INTO transactions (userId, type, amount, status, details, txHash, notes, createdAt, updatedAt)
-        VALUES (?, ?, ?, ?, ?, ?, ?, STRFTIME('%Y-%m-%d %H:%M:%S', 'NOW'), STRFTIME('%Y-%m-%d %H:%M:%S', 'NOW'))
-      `);
+        INSERT INTO transactions (userId, type, amount, status, details, txHash, notes, isAdminAction, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, STRFTIME('%Y-%m-%d %H:%M:%S', 'NOW'), STRFTIME('%Y-%m-%d %H:%M:%S', 'NOW'))
+      `); // Added isAdminAction to query
       
       const result = stmt.run(
         userId,
@@ -73,12 +72,13 @@ class Transaction {
         status,
         details,
         txHash,
-        notes
+        notes,
+        isAdminAction // Added isAdminAction to parameters
       );
       
       return {
         id: result.lastInsertRowid,
-        userId, type, amount, status, details, txHash, notes
+        userId, type, amount, status, details, txHash, notes, isAdminAction // Added isAdminAction to return
       };
     } catch (error) {
       console.error('Error creating transaction:', error);
@@ -177,7 +177,6 @@ static getTotalReferralEarnings(userId) {
    * @param {number} [offset=0] - Offset for pagination
    * @returns {Array} Array of transaction objects
    */
-// ...existing code...
   static getByUserIdWithPagination(userId, offset = 0, limit = 10) {
     return db.prepare(`
       SELECT * FROM transactions
@@ -382,10 +381,10 @@ static getTotalReferralEarnings(userId) {
    */
   static getRecent(limit = 5) {
     return db.prepare(`
-      SELECT t.*, u.username, u.email
+      SELECT t.*, u.username 
       FROM transactions t
       JOIN users u ON t.userId = u.id
-      ORDER BY t.createdAt DESC
+      ORDER BY t.createdAt DESC 
       LIMIT ?
     `).all(limit);
   }
@@ -398,9 +397,9 @@ static getTotalReferralEarnings(userId) {
    */
   static getRecentByUserId(userId, limit = 5) {
     return db.prepare(`
-      SELECT * FROM transactions
-      WHERE userId = ?
-      ORDER BY createdAt DESC
+      SELECT * FROM transactions 
+      WHERE userId = ? 
+      ORDER BY createdAt DESC 
       LIMIT ?
     `).all(userId, limit);
   }

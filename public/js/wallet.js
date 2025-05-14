@@ -260,79 +260,150 @@ function getUserToken() {
 }
 
 /**
- * Fetch wallet summary data (balance, stats, chart).
+ * Fetch wallet summary data (balance, stats, chart data)
+ * @returns {Promise<Object>} Wallet data object
  */
 async function fetchWalletData() {
     try {
-        // Show loading indicators if needed
-        showElementLoading('totalBalance');
-        showElementLoading('availableBalance');
-        
-        const token = getUserToken();
-        
-
-        const response = await fetch(API_ENDPOINTS.getWalletData, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (response.status === 401) {
-            // Token expired or invalid
-            window.location.href = '/auth.html';
-            return;
+      // Show loading indicators
+      const totalBalanceEl = document.querySelector('[data-balance="total"]') || document.getElementById('totalBalance');
+      const availableBalanceEl = document.querySelector('[data-balance="available"]') || document.getElementById('availableBalance');
+      const pendingBalanceEl = document.querySelector('[data-balance="pending"]') || document.getElementById('pendingBalance');
+      
+      if (totalBalanceEl) totalBalanceEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      if (availableBalanceEl) availableBalanceEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      if (pendingBalanceEl) pendingBalanceEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      
+      // Get auth token
+      const token = getUserToken();
+      if (!token) {
+        window.location.href = '/auth.html';
+        return null;
+      }
+      
+      // Fetch wallet data from API
+      const response = await fetch(API_ENDPOINTS.getWalletData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-        
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to fetch wallet data');
-        }
-
-        walletData = data; // Store fetched data
-
-        // Update UI with wallet details
-        if (elements.walletAddress && data.wallet?.address) {
-            elements.walletAddress.textContent = data.wallet.address;
-        }
-
-        // Update Balance Cards
-        if (elements.totalBalance) elements.totalBalance.textContent = formatCurrency(data.balance?.total || 0);
-        if (elements.hiddenBalance) elements.hiddenBalance.textContent = '••••••••';
-        if (elements.availableBalance) elements.availableBalance.textContent = formatCurrency(data.balance?.available || 0);
-        if (elements.totalDeposits) elements.totalDeposits.textContent = formatCurrency(data.stats?.totalDeposits || 0);
-        if (elements.totalWithdrawals) elements.totalWithdrawals.textContent = formatCurrency(data.stats?.totalWithdrawals || 0);
-
-        // Update Chart (Example - adapt based on actual chart library and data)
-        if (elements.balanceChartCanvas && data.chartData) {
-            updateBalanceChart(data.chartData);
-        }
-
-        // Update available balance on withdraw tab if it's visible
-        if (elements.withdrawAvailableBalance && document.getElementById('withdraw-tab') && 
-            !document.getElementById('withdraw-tab').classList.contains('hidden')) {
-            elements.withdrawAvailableBalance.textContent = formatCurrency(walletData.balance.available);
-        }
-        
-        hideElementLoading('totalBalance');
-        hideElementLoading('availableBalance');
-
+      });
+      
+      if (response.status === 401) {
+        window.location.href = '/auth.html';
+        return null;
+      }
+      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to fetch wallet data');
+      }
+      
+      // Store data globally for reuse
+      walletData = data;
+      
+      // Update all balance displays across the site
+      updateAllBalanceDisplays(data.balance);
+      
+      // Update last updated timestamp
+      updateLastUpdated(data.lastUpdated);
+      
+      return data;
     } catch (error) {
-        console.error('Error fetching wallet data:', error);
-        showErrorNotification('Could not load wallet summary. Using placeholders.');
-        // Set placeholder values
-        if (elements.totalBalance) elements.totalBalance.textContent = formatCurrency(0);
-        if (elements.hiddenBalance) elements.hiddenBalance.textContent = '••••••••';
-        if (elements.availableBalance) elements.availableBalance.textContent = formatCurrency(0);
-        if (elements.totalDeposits) elements.totalDeposits.textContent = formatCurrency(0);
-        if (elements.totalWithdrawals) elements.totalWithdrawals.textContent = formatCurrency(0);
-        
-        hideElementLoading('totalBalance');
-        hideElementLoading('availableBalance');
+      console.error('Error fetching wallet data:', error);
+      // Show error state
+      updateAllBalanceDisplays({
+        total: 0,
+        available: 0, 
+        pending: 0
+      });
+      return null;
     }
-}
-
+  }
+  
+  /**
+   * Update all balance displays across the site
+   * @param {Object} balance - Balance object with total, available, pending
+   */
+  function updateAllBalanceDisplays(balance = { total: 0, available: 0, pending: 0 }) {
+    // Format currency for display
+    const formattedTotal = formatCurrency(balance.total);
+    const formattedAvailable = formatCurrency(balance.available);
+    const formattedPending = formatCurrency(balance.pending);
+    
+    // Update by data attribute (modern approach)
+    document.querySelectorAll('[data-balance="total"]').forEach(el => {
+      el.textContent = formattedTotal;
+    });
+    
+    document.querySelectorAll('[data-balance="available"]').forEach(el => {
+      el.textContent = formattedAvailable;
+    });
+    
+    document.querySelectorAll('[data-balance="pending"]').forEach(el => {
+      el.textContent = formattedPending;
+    });
+    
+    // Also update by ID for backward compatibility
+    const totalBalanceEl = document.getElementById('totalBalance');
+    const availableBalanceEl = document.getElementById('availableBalance');
+    const pendingBalanceEl = document.getElementById('pendingBalance');
+    
+    if (totalBalanceEl) totalBalanceEl.textContent = formattedTotal;
+    if (availableBalanceEl) availableBalanceEl.textContent = formattedAvailable;
+    if (pendingBalanceEl) pendingBalanceEl.textContent = formattedPending;
+  }
+  
+  /**
+   * Update last updated timestamp display
+   * @param {string} timestamp - Formatted timestamp string
+   */
+  function updateLastUpdated(timestamp) {
+    const lastUpdatedEls = document.querySelectorAll('#last-updated');
+    lastUpdatedEls.forEach(el => {
+      el.textContent = timestamp || new Date().toLocaleString();
+    });
+  }
+  
+  /**
+   * Format currency value
+   * @param {number} amount - Amount to format
+   * @returns {string} Formatted currency string
+   */
+  function formatCurrency(amount) {
+    if (amount === null || amount === undefined) return '$0.00';
+    
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  }
+  
+  // Add auto-refresh functionality to keep balances current
+  function setupBalanceAutoRefresh(intervalMs = 30000) { // Default: refresh every 30 seconds
+    // Initial fetch
+    fetchWalletData();
+    
+    // Set interval for periodic updates
+    const intervalId = setInterval(fetchWalletData, intervalMs);
+    
+    // Store interval ID so it can be cleared if needed
+    window.balanceRefreshInterval = intervalId;
+  }
+  
+  // Initialize when DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    setupBalanceAutoRefresh();
+    
+    // Set up visibility toggle if it exists
+    const toggleBtn = document.getElementById('toggleBalanceVisibility');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', toggleBalanceVisibility);
+    }
+  });
 /**
  * Fetch wallet balance only.
  */

@@ -288,10 +288,20 @@ class Investment {
     static async getActiveInvestments(userId) {
         try {
             const stmt = DB.prepare('SELECT * FROM investments WHERE user_id = ? AND status = ? ORDER BY start_date DESC');
+            // Added for debugging
+            console.log(`[Investment.getActiveInvestments] Called with userId: ${userId}, status definition: ${INVESTMENT_STATUS}, status value for query: ${INVESTMENT_STATUS ? INVESTMENT_STATUS.ACTIVE : 'INVESTMENT_STATUS_IS_UNDEFINED'}`);
+            if (typeof INVESTMENT_STATUS === 'undefined') {
+                console.error('[Investment.getActiveInvestments] CRITICAL: INVESTMENT_STATUS object itself is undefined!');
+            } else if (typeof INVESTMENT_STATUS.ACTIVE === 'undefined') {
+                console.error('[Investment.getActiveInvestments] CRITICAL: INVESTMENT_STATUS.ACTIVE property is undefined!');
+            }
             const investments = stmt.all(userId, INVESTMENT_STATUS.ACTIVE);
             return investments.map(this.formatInvestmentObject);
         } catch (error) {
             console.error('Error getting active investments:', error);
+            // Log parameters if error occurs, attempting to access them safely
+            const statusVal = INVESTMENT_STATUS && typeof INVESTMENT_STATUS.ACTIVE !== 'undefined' ? INVESTMENT_STATUS.ACTIVE : 'UNDEFINED_OR_INVESTMENT_STATUS_MISSING';
+            console.error(`[Investment.getActiveInvestments] Error occurred with userId: ${userId}, status value attempted: ${statusVal}`);
             return [];
         }
     }

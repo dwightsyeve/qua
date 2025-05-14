@@ -177,10 +177,10 @@ exports.updateUserBalance = async (req, res) => {
         await Transaction.create({
             userId: parsedUserId,
             amount: Math.abs(adjustmentAmount),
-            type: adjustmentAmount >= 0 ? 'deposit' : 'withdrawal',
+            type: 'Admin Adjustment', // Changed from 'deposit'/'withdrawal'
             status: 'completed',
-            description: reason || (adjustmentAmount >= 0 ? 'Admin balance increase' : 'Admin balance reduction'),
-            isAdminAction: true
+            details: reason || (adjustmentAmount >= 0 ? 'Admin balance increase' : 'Admin balance reduction'), // Changed from description to details
+            isAdminAction: true // This property is not in the Transaction model, consider adding it or removing this line
         });
         
         return res.json({ 

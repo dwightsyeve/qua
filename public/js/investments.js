@@ -69,6 +69,7 @@ function initTabNavigation() {
  * @param {string} tabId - ID of the tab to switch to
  */
 async function switchTab(tabId) {
+    console.log(`[switchTab] Attempting to switch to tab: ${tabId}`); // New Log A
     // Hide all tab contents
     const tabContents = document.querySelectorAll('.tab-content');
     tabContents.forEach(content => {
@@ -82,8 +83,20 @@ async function switchTab(tabId) {
     });
     
     // Show selected tab content and activate button
-    document.getElementById(tabId).classList.remove('hidden');
-    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+    const selectedTabContent = document.getElementById(tabId);
+    if (selectedTabContent) {
+        selectedTabContent.classList.remove('hidden');
+        console.log(`[switchTab] Tab content '${tabId}' should now be visible (hidden class removed). Current classList: ${selectedTabContent.classList.toString()}`); // New Log B
+    } else {
+        console.error(`[switchTab] Tab content with ID '${tabId}' not found!`); // New Log C
+    }
+
+    const selectedTabButton = document.querySelector(`[data-tab="${tabId}"]`);
+    if (selectedTabButton) {
+        selectedTabButton.classList.add('active');
+    } else {
+        console.warn(`[switchTab] Tab button for '${tabId}' not found.`); // New Log D
+    }
     
     try {
         // Fetch data based on the active tab
@@ -94,9 +107,10 @@ async function switchTab(tabId) {
         }
     } catch (error) {
         showErrorNotification('Failed to load data. Please try again later.');
-        console.error(error);
+        console.error('[switchTab] Error during data fetch for tab:', error); // New Log E
     }
 }
+
 
 /**
  * Initialize sidebar functionality
@@ -151,76 +165,157 @@ async function fetchInvestmentPlans() {
     }
 }
 
+
+
+/**
+ * Fetch and render active investments
+ */
 /**
  * Fetch and render active investments
  */
 function fetchAndRenderActiveInvestments() {
+    console.log('[fetchAndRenderActiveInvestments] Function called.'); // Log 1: Function entry
+
     const activeInvestmentsContainer = document.getElementById('activeInvestmentsContainer');
     const noActiveInvestmentsElement = document.getElementById('noActiveInvestments');
-    
-    // Reset the container
-    activeInvestmentsContainer.innerHTML = '';
-    
-    // Get authentication token
-    const token = getAuthToken();
-    if (!token) {
-        window.location.href = 'auth.html';
+    const loadingElement = document.getElementById('activeInvestmentsLoading');
+    const errorElement = document.getElementById('activeInvestmentsError');
+    const errorMessageElement = document.getElementById('activeInvestmentsErrorMessage');
+    const template = document.getElementById('investmentCardTemplate');
+
+    if (!activeInvestmentsContainer || !noActiveInvestmentsElement || !loadingElement || !template || !errorElement || !errorMessageElement) {
+        console.error("[fetchAndRenderActiveInvestments] CRITICAL: One or more required DOM elements are missing. Check IDs in investment.html.");
+        console.log({ // Log 2: Element check
+            activeInvestmentsContainer: !!activeInvestmentsContainer,
+            noActiveInvestmentsElement: !!noActiveInvestmentsElement,
+            loadingElement: !!loadingElement,
+            errorElement: !!errorElement,
+            errorMessageElement: !!errorMessageElement,
+            template: !!template
+        });
         return;
     }
-    
-    // Show loading state
-    activeInvestmentsContainer.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Loading investments...</div>';
-    
-    // Fetch active investments from API
+    console.log('[fetchAndRenderActiveInvestments] All DOM elements found.'); // Log 3: Elements confirmed
+
+    // Show loading, hide other states
+    loadingElement.classList.remove('hidden');
+    activeInvestmentsContainer.classList.add('hidden'); // Ensure container is hidden during load
+    noActiveInvestmentsElement.classList.add('hidden');
+    errorElement.classList.add('hidden');
+    console.log('[fetchAndRenderActiveInvestments] Initial UI state set: Loading visible, others hidden.'); // Log 4: UI state
+
+    const token = getAuthToken();
+    if (!token) {
+        console.warn('[fetchAndRenderActiveInvestments] No auth token found. Aborting.'); // Log 5: No token
+        // Potentially hide loading and show an error or redirect
+        loadingElement.classList.add('hidden');
+        errorMessageElement.textContent = 'Authentication error. Please log in again.';
+        errorElement.classList.remove('hidden');
+        return;
+    }
+
     fetch(API_ENDPOINTS.getActiveInvestments, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
     })
     .then(response => {
+        console.log('[fetchAndRenderActiveInvestments] API response received. Status:', response.status); // Log 6: API status
         if (response.status === 401) {
             sessionStorage.removeItem('authToken');
-            window.location.href = 'auth.html';
-            throw new Error('Unauthorized');
+            localStorage.removeItem('token'); // Ensure both are cleared
+            window.location.href = 'auth.html?redirect=investment.html';
+            throw new Error('Unauthorized - Redirecting to login');
+        }
+        if (!response.ok) {
+            throw new Error(`API request failed with status ${response.status}`);
         }
         return response.json();
     })
     .then(data => {
-        // Clear loading indicator
-        activeInvestmentsContainer.innerHTML = '';
-        
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to load investments');
-        }
-        
-        const activeInvestments = data.data || [];
-        
-        // KEY FIX: When no investments, always show the "no investments" message
-        // Don't use classList.remove('hidden') which was failing before
-        if (activeInvestments.length === 0) {
-            // Make container empty and show the "no investments" message
-            activeInvestmentsContainer.style.display = 'none';
-            noActiveInvestmentsElement.style.display = 'block'; // Force display
+        console.log("[fetchAndRenderActiveInvestments] API data parsed:", JSON.stringify(data, null, 2)); // Log 7: Parsed API data
+
+        loadingElement.classList.add('hidden');
+        activeInvestmentsContainer.innerHTML = ''; // Clear previous cards
+
+        if (!data.success || !data.data || data.data.length === 0) {
+            console.log("[fetchAndRenderActiveInvestments] No active investments data found or API call unsuccessful."); // Log 8: No data
+            noActiveInvestmentsElement.classList.remove('hidden');
+            activeInvestmentsContainer.classList.add('hidden'); // Keep container hidden
+            console.log('[fetchAndRenderActiveInvestments] "No investments" message visible. Container hidden.');
             return;
         }
-        
-        // We have investments, hide the "no investments" message
-        activeInvestmentsContainer.style.display = 'grid';
-        noActiveInvestmentsElement.style.display = 'none';
-        
-        // Render investments as before...
-        activeInvestments.forEach(investment => {
-            // Your existing rendering code
+
+        console.log(`[fetchAndRenderActiveInvestments] ${data.data.length} investment(s) found. Preparing to render.`); // Log 9: Data found
+        activeInvestmentsContainer.classList.remove('hidden'); // <<<< KEY: Make container visible
+        noActiveInvestmentsElement.classList.add('hidden');
+        errorElement.classList.add('hidden');
+        console.log('[fetchAndRenderActiveInvestments] Active investments container should now be visible (hidden class removed).'); // Log 10
+
+        data.data.forEach((investment, index) => {
+            console.log(`[fetchAndRenderActiveInvestments] Processing investment ${index + 1}:`, investment.id); // Log 11
+            try {
+                const metrics = calculateInvestmentMetrics(investment);
+                const cardClone = template.content.cloneNode(true);
+                const cardElement = cardClone.firstElementChild; 
+
+                // ... (rest of your card population logic) ...
+                
+                cardElement.querySelector('[data-final-return]').textContent = `${metrics.expectedReturn.toFixed(2)} USDT`;
+
+                const cancelButton = cardElement.querySelector('.cancel-investment-button');
+                if (cancelButton) {
+                    cancelButton.onclick = () => showCancelInvestmentModal(investment.id);
+                } else {
+                    console.warn(`[fetchAndRenderActiveInvestments] Cancel button not found in template for investment ${investment.id}`);
+                }
+                
+                activeInvestmentsContainer.appendChild(cardElement);
+                console.log(`[fetchAndRenderActiveInvestments] Card for investment ${investment.id} appended. Current childElementCount: ${activeInvestmentsContainer.childElementCount}`); // Log 12 (updated)
+
+                // New Log F: Check dimensions of the first appended card
+                if (index === 0) {
+                    console.log(`[fetchAndRenderActiveInvestments] Dimensions of first card (ID: ${investment.id}): offsetWidth=${cardElement.offsetWidth}, offsetHeight=${cardElement.offsetHeight}`);
+                    const cardStyles = window.getComputedStyle(cardElement);
+                    console.log(`[fetchAndRenderActiveInvestments] Computed styles for first card: display=${cardStyles.display}, visibility=${cardStyles.visibility}, opacity=${cardStyles.opacity}, height=${cardStyles.height}, width=${cardStyles.width}`);
+                }
+
+            } catch (e) {
+                console.error(`[fetchAndRenderActiveInvestments] Error rendering card for investment ${investment.id}:`, e); // Log 13
+            }
         });
+        console.log('[fetchAndRenderActiveInvestments] All investment cards processed.');
+        
+        console.log('[fetchAndRenderActiveInvestments] Final activeInvestmentsContainer classList:', activeInvestmentsContainer.classList.toString());
+        console.log('[fetchAndRenderActiveInvestments] Final activeInvestmentsContainer childElementCount:', activeInvestmentsContainer.childElementCount);
+        
+        // New Log G: Check dimensions of the container AFTER all cards are appended
+        console.log(`[fetchAndRenderActiveInvestments] Dimensions of activeInvestmentsContainer: offsetWidth=${activeInvestmentsContainer.offsetWidth}, offsetHeight=${activeInvestmentsContainer.offsetHeight}`);
+        const containerStyles = window.getComputedStyle(activeInvestmentsContainer);
+        console.log(`[fetchAndRenderActiveInvestments] Computed styles for activeInvestmentsContainer: display=${containerStyles.display}, visibility=${containerStyles.visibility}, opacity=${containerStyles.opacity}, height=${containerStyles.height}, width=${containerStyles.width}`);
+
+        // New Log H: Check parent tab content dimensions
+        const parentTabContent = document.getElementById('active-investments'); // Assuming this is the ID of the tab content div
+        if (parentTabContent) {
+            console.log(`[fetchAndRenderActiveInvestments] Dimensions of parent tab content (div#active-investments): offsetWidth=${parentTabContent.offsetWidth}, offsetHeight=${parentTabContent.offsetHeight}`);
+            const parentTabStyles = window.getComputedStyle(parentTabContent);
+            console.log(`[fetchAndRenderActiveInvestments] Computed styles for parent tab content: display=${parentTabStyles.display}, visibility=${parentTabStyles.visibility}, opacity=${parentTabStyles.opacity}, height=${parentTabStyles.height}, width=${parentTabStyles.width}`);
+        } else {
+            console.warn('[fetchAndRenderActiveInvestments] Parent tab content (div#active-investments) not found for dimension check.');
+        }
+
     })
     .catch(error => {
-        console.error('Error fetching active investments:', error);
-        activeInvestmentsContainer.innerHTML = `<div class="text-center py-4 text-red-500">
-            <i class="fas fa-exclamation-circle mr-2"></i> ${error.message || 'Failed to load investments'}
-        </div>`;
+        console.error('[fetchAndRenderActiveInvestments] Fetch or processing error:', error); // Log 14: Catch block error
+        loadingElement.classList.add('hidden');
+        activeInvestmentsContainer.classList.add('hidden'); // Ensure container is hidden on error
+        noActiveInvestmentsElement.classList.add('hidden'); // Hide no data message too
+        
+        errorMessageElement.textContent = error.message || 'Failed to load investments. Please try again.';
+        errorElement.classList.remove('hidden');
+        console.log('[fetchAndRenderActiveInvestments] Error message displayed.');
     });
 }
-
 /**
  * Calculate investment progress percentage
  * @param {Date} startDate - Investment start date
@@ -584,6 +679,26 @@ async function submitInvestment() {
         submitButton.innerHTML = 'Confirm Investment';
     }
 }
+
+// Add to the end of functions that modify investments
+
+/**
+ * Update wallet balances after investment changes
+ */
+function updateBalancesAfterInvestmentChange() {
+    // If wallet.js has loaded and made fetchWalletData available
+    if (typeof fetchWalletData === 'function') {
+      fetchWalletData();
+    }
+  }
+  
+  // Call this after creating a new investment or when an investment status changes
+  function submitInvestment() {
+    // ... existing code
+    
+    // After successful submission
+    updateBalancesAfterInvestmentChange();
+  }
 
 /**
  * Show cancel investment modal
