@@ -81,6 +81,42 @@
             justify-content: center;
             cursor: pointer;
         }
+
+        /* Balance tooltip styles */
+.balance-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.2s ease;
+}
+
+.group:hover .balance-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Add a small caret/arrow to the tooltip */
+.balance-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: white transparent transparent transparent;
+}
+
+/* Balance update animation */
+@keyframes balanceUpdate {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(99, 102, 241, 0.2); }
+    100% { background-color: transparent; }
+}
+
+.balance-update {
+    animation: balanceUpdate 1s ease;
+}
+
         .notification-item.unread {
             border-left-color: var(--accent-color);
         }

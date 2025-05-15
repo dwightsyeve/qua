@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isDashboardPage) {
         initCharts(); // Make sure charts are initialized
         updateLastUpdated();
+
         
         // Check authentication but don't redirect immediately
         checkAuthStatus().then(authenticated => {
@@ -22,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Fetch data only if authenticated
                 fetchNotifications();
                 fetchDashboardData();
+                calculateTotalBalance();
+                setupBalanceRefresh();
             } else {
                 // Show login prompt instead of redirect
                 showLoginPrompt();
@@ -1132,29 +1135,57 @@ function updateDashboardUI(data) {
             : '$0.00';
     }
 
-    // Update balance elements by ID
+    // Extract exact available balance from API response
+    const availableBalance = parseFloat(data.availableBalance || 0);
+    console.log("API returned available balance:", availableBalance);
+    
+    // Get investment amount for total calculation
+    const investmentAmount = data.investments && 
+                            typeof data.investments.activeAmount !== 'undefined' ? 
+                            parseFloat(data.investments.activeAmount || 0) : 0;
+    
+    // Calculate the total balance from available balance + active investment amount
+    const calculatedTotalBalance = availableBalance + investmentAmount;
+    
+    console.log("Balance calculation:", {
+        availableBalance,
+        investmentAmount,
+        calculatedTotalBalance
+    });
+
+    // Update total balance element with our calculated value
     const totalBalanceEl = document.getElementById('totalBalance');
     if (totalBalanceEl) {
-        totalBalanceEl.textContent = formatCurrency(data.totalBalance);
+        totalBalanceEl.textContent = formatCurrency(calculatedTotalBalance);
     } else {
         console.warn("Total balance element not found by ID");
         // Fallback to more generic selector
-        const fallbackEl = document.querySelector('.bg-green .text-2xl');
-        if (fallbackEl) fallbackEl.textContent = formatCurrency(data.totalBalance);
+        const fallbackEl = document.querySelector('[data-balance="total"]');
+        if (fallbackEl) fallbackEl.textContent = formatCurrency(calculatedTotalBalance);
     }
     
-    // Update available balance
+    // Update available balance directly from API data
     const availableBalanceEl = document.getElementById('availableBalance');
     if (availableBalanceEl) {
-        availableBalanceEl.textContent = formatCurrency(data.availableBalance);
+        availableBalanceEl.textContent = formatCurrency(availableBalance);
+    } else {
+        console.warn("Available balance element not found by ID");
+        // Fallback to more generic selector
+        const fallbackEl = document.querySelector('[data-balance="available"]');
+        if (fallbackEl) fallbackEl.textContent = formatCurrency(availableBalance);
     }
     
     // Update pending balance
     const pendingBalanceEl = document.getElementById('pendingBalance');
     if (pendingBalanceEl) {
         pendingBalanceEl.textContent = formatCurrency(data.pendingBalance || 0);
+    } else {
+        // Fallback to more generic selector
+        const fallbackEl = document.querySelector('[data-balance="pending"]');
+        if (fallbackEl) fallbackEl.textContent = formatCurrency(data.pendingBalance || 0);
     }
     
+        
     // Update monthly growth
     const monthlyGrowthEl = document.getElementById('monthlyGrowth');
     if (monthlyGrowthEl && data.monthlyGrowth !== undefined) {
@@ -1167,6 +1198,7 @@ function updateDashboardUI(data) {
         lastUpdatedEl.textContent = new Date().toLocaleString();
     }
 }
+
 
 // Add this to your existing DOMContentLoaded event handler
 document.addEventListener('DOMContentLoaded', function() {
@@ -1313,6 +1345,25 @@ function updateReferralChart(referralData) {
 }
 
 
+// Update investment counts from API data
+function updateInvestmentCounts(investmentsData) {
+    try {
+        // Get active investments count
+        const activeCount = investmentsData.data ? investmentsData.data.length : 0;
+        document.getElementById('approved-investments-count').textContent = activeCount;
+        
+        // These would typically come from a dashboard API that provides all counts
+        // For now, we're just setting a placeholder value for pending
+        document.getElementById('pendingInvestmentsCount').textContent = '0';
+        document.getElementById('rejected-transactions-count').textContent = '0';
+    } catch (error) {
+        console.error('Error updating investment counts:', error);
+    }
+}
+
+
+
+
 /**
  * Update last updated timestamp
  */
@@ -1347,3 +1398,54 @@ function updateLastUpdated() {
     console.warn('No user data found in sessionStorage');
   }
 })();
+
+
+// Function to animate balance changes
+function animateBalanceUpdate(element, newValue) {
+    if (!element) return;
+    
+    const currentText = element.textContent;
+    const currentValue = parseFloat(currentText.replace(/[^0-9.-]+/g, "")) || 0;
+    
+    // If values are the same, no need to animate
+    if (currentValue === newValue) return;
+    
+    // Add highlight class to briefly change background color
+    element.classList.add('balance-update');
+    
+    // Set the new value
+    element.textContent = `$${newValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    
+    // Remove highlight after animation completes
+    setTimeout(() => {
+        element.classList.remove('balance-update');
+    }, 1000);
+}
+
+// Set up periodic balance refresh
+function setupBalanceRefresh() {
+    // Refresh every 60 seconds
+    setInterval(() => {
+        calculateTotalBalance();
+    }, 60000);
+    
+    // Add refresh button functionality
+    const refreshButton = document.createElement('button');
+    refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
+    refreshButton.className = 'absolute top-0 right-0 p-1 text-xs text-indigo-600 hover:text-indigo-800';
+    refreshButton.title = 'Refresh balance';
+    refreshButton.addEventListener('click', () => {
+        refreshButton.classList.add('animate-spin');
+        calculateTotalBalance().then(() => {
+            setTimeout(() => {
+                refreshButton.classList.remove('animate-spin');
+            }, 500);
+        });
+    });
+    
+    // Add the refresh button near the last updated text
+    const lastUpdatedContainer = document.getElementById('last-updated').parentElement;
+    lastUpdatedContainer.style.position = 'relative';
+    lastUpdatedContainer.appendChild(refreshButton);
+}
+

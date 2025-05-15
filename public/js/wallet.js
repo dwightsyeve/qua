@@ -52,6 +52,9 @@ function cacheDOMElements() {
     elements.closeSidebarBtn = document.getElementById('sidebarClose');
     elements.sidebarOverlay = document.getElementById('sidebarOverlay');
 
+     
+
+
     // Balance display
     elements.totalBalance = document.getElementById('totalBalance');
     elements.hiddenBalance = document.getElementById('hiddenBalance');
@@ -281,35 +284,77 @@ async function fetchWalletData() {
         return null;
       }
       
-      // Fetch wallet data from API
-      const response = await fetch(API_ENDPOINTS.getWalletData, {
+      // First fetch dashboard data to get active investment amount
+      const dashboardResponse = await fetch('/api/dashboard', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
-      if (response.status === 401) {
+      // Then fetch wallet data
+      const walletResponse = await fetch(API_ENDPOINTS.getWalletData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (dashboardResponse.status === 401 || walletResponse.status === 401) {
         window.location.href = '/auth.html';
         return null;
       }
       
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
+      if (!walletResponse.ok) throw new Error(`HTTP error! status: ${walletResponse.status}`);
+      if (!dashboardResponse.ok) throw new Error(`HTTP error! status: ${dashboardResponse.status}`);
       
-      if (!data.success) {
-        throw new Error(data.message || 'Failed to fetch wallet data');
+      const dashboardData = await dashboardResponse.json();
+      const walletData = await walletResponse.json();
+      
+      if (!walletData.success) {
+        throw new Error(walletData.message || 'Failed to fetch wallet data');
       }
       
-      // Store data globally for reuse
-      walletData = data;
+      // Get active investment amount from dashboard data
+      // This is the key fix - we're using the dashboard's activeAmount
+      const investmentActiveAmount = dashboardData.investments && 
+                               typeof dashboardData.investments.activeAmount !== 'undefined' ? 
+                               parseFloat(dashboardData.investments.activeAmount || 0) : 0;
+
+      console.log("Dashboard data:", dashboardData);
+      console.log("Investment active amount from dashboard:", investmentActiveAmount);
       
-      // Update all balance displays across the site
-      updateAllBalanceDisplays(data.balance);
+      // Add investment amount to wallet data for future reference
+      walletData.investmentAmount = investmentActiveAmount;
+      
+      // Store data globally for reuse
+      window.walletData = walletData;
+      
+      // Calculate available balance
+      const availableBalance = parseFloat(walletData.balance && walletData.balance.available ? walletData.balance.available : 0);
+      const pendingBalance = parseFloat(walletData.balance && walletData.balance.pending ? walletData.balance.pending : 0);
+      
+      // Calculate total balance as available balance + active investment amount
+      const totalBalance = availableBalance + investmentActiveAmount;
+      
+      console.log("Balance calculation:", {
+        availableBalance,
+        investmentActiveAmount,
+        totalBalance
+      });
+      
+      // Update all balance displays across the site with calculated total
+      updateAllBalanceDisplays({
+        total: totalBalance,
+        available: availableBalance,
+        pending: pendingBalance
+      });
       
       // Update last updated timestamp
-      updateLastUpdated(data.lastUpdated);
+      updateLastUpdated(walletData.lastUpdated);
       
-      return data;
+      // Set up tooltip with breakdown
+      setupBalanceTooltip(availableBalance, investmentActiveAmount);
+      
+      return walletData;
     } catch (error) {
       console.error('Error fetching wallet data:', error);
       // Show error state
@@ -320,9 +365,9 @@ async function fetchWalletData() {
       });
       return null;
     }
-  }
-  
-  /**
+}
+
+/**
    * Update all balance displays across the site
    * @param {Object} balance - Balance object with total, available, pending
    */
@@ -353,6 +398,9 @@ async function fetchWalletData() {
     if (totalBalanceEl) totalBalanceEl.textContent = formattedTotal;
     if (availableBalanceEl) availableBalanceEl.textContent = formattedAvailable;
     if (pendingBalanceEl) pendingBalanceEl.textContent = formattedPending;
+    
+    // Add tooltip to show balance breakdown if investmentAmount is available
+    setupBalanceTooltip(balance.available, balance.total - balance.available);
   }
   
   /**
@@ -1132,3 +1180,38 @@ document.addEventListener('DOMContentLoaded', async function() {
     await populateWithdrawalHistory();
     await populateDepositHistory();
   });
+
+
+  // Add this function to your wallet.js
+function setupBalanceTooltip(availableBalance, investmentAmount) {
+    const totalBalanceElements = document.querySelectorAll('[data-balance="total"]');
+    
+    totalBalanceElements.forEach(el => {
+      // Remove existing tooltip if any
+      const existingTooltip = el.querySelector('.balance-tooltip');
+      if (existingTooltip) existingTooltip.remove();
+      
+      // Create tooltip element
+      const tooltipHTML = `
+        <div class="balance-tooltip absolute z-10 bottom-full left-0 mb-2 w-64 bg-white text-gray-800 rounded-lg shadow-lg p-3 text-sm hidden group-hover:block">
+          <h4 class="font-semibold mb-1">Balance Breakdown:</h4>
+          <div class="grid grid-cols-2 gap-1">
+            <div>Available Balance:</div>
+            <div class="text-right">$${availableBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+            
+            <div>Investment Value:</div>
+            <div class="text-right">$${investmentAmount.toLocaleString('en-US', {minimumFractionDigits: 2})}</div>
+            
+            <div class="font-semibold border-t border-gray-200 pt-1 mt-1">Total Balance:</div>
+            <div class="text-right font-semibold border-t border-gray-200 pt-1 mt-1">
+              $${(availableBalance + investmentAmount).toLocaleString('en-US', {minimumFractionDigits: 2})}
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Add tooltip and necessary classes to parent element
+      el.classList.add('relative', 'group');
+      el.insertAdjacentHTML('beforeend', tooltipHTML);
+    });
+  }
