@@ -644,7 +644,7 @@ function generateDepositPage(walletAddress, qrCodeUrl) {
 
 /**
  * Generates and displays a withdrawal form page with enhanced visual styling.
- * This will replace the current page content with a visually appealing design.
+ * This uses DOM manipulation instead of document.write to prevent page reloads.
  */
 function showWithdrawPage() {
     // Get wallet data first to populate the balance
@@ -654,6 +654,9 @@ function showWithdrawPage() {
         window.location.href = '/auth.html';
         return;
     }
+
+    // Store the original content in case we need to restore it on error
+    const originalContent = document.body.innerHTML;
 
     // Show loading spinner while we fetch data
     document.body.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100vh;"><i class="fas fa-spinner fa-spin fa-3x"></i></div>';
@@ -667,8 +670,7 @@ function showWithdrawPage() {
     .then(response => {
         if (!response.ok) {
             if (response.status === 401) {
-                window.location.href = '/auth.html';
-                throw new Error('Unauthorized');
+                throw new Error('Unauthorized - Please login again');
             }
             throw new Error('Failed to fetch wallet balance');
         }
@@ -680,12 +682,15 @@ function showWithdrawPage() {
         }
         
         const availableBalance = data.balance?.available || 0;
-        generateWithdrawalPage(availableBalance);
+        
+        // Create the withdrawal page UI using DOM manipulation
+        // This prevents the document.write approach that causes the page to reload
+        createWithdrawalPage(availableBalance);
     })
     .catch(error => {
         console.error('Error fetching wallet balance:', error);
-        // If we fail, use a placeholder
-        generateWithdrawalPage(0);
+        document.body.innerHTML = '<div class="error-container" style="text-align: center; margin-top: 50px;"><h2>Error</h2><p>' + 
+            error.message + '</p><button onclick="window.location.href=\'wallet.html\'" class="btn btn-primary">Back to Wallet</button></div>';
     });
 }
 
@@ -1142,12 +1147,11 @@ function generateWithdrawalPage(availableBalance) {
             const amountField = document.getElementById('amount');
             const recipientError = document.getElementById('recipientError');
             const amountError = document.getElementById('amountError');
-            const feedbackMessage = document.getElementById('feedbackMessage');
-
-            // Setup 'Back to Wallet' button listener separately
+            const feedbackMessage = document.getElementById('feedbackMessage');            // Setup 'Back to Wallet' button listener separately
             // This ensures it only fires when the back button itself is clicked.
             if (backButton) {
-                backButton.addEventListener('click', function() {
+                backButton.addEventListener('click', function(e) {
+                    e.preventDefault(); // Prevent any default behavior
                     window.location.href = 'wallet.html';
                 });
             }
@@ -1186,10 +1190,7 @@ function generateWithdrawalPage(availableBalance) {
                             amountError.style.display = 'block';
                         }
                         isValid = false;
-                    }
-                    
-                                
-                    if (isValid) {
+                    }                              if (isValid) {
                         if (submitButton) {
                             submitButton.disabled = true;
                             submitButton.innerHTML = '<div class="loader" style="display: inline-block; margin-right: 10px;"></div> Processing...';
@@ -1197,22 +1198,28 @@ function generateWithdrawalPage(availableBalance) {
                         
                         const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
                         
+                        // Create a controller to abort the request if it takes too long
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                        
                         fetch('/api/wallet/withdraw', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Authorization': 'Bearer ' + token
                             },
+                            signal: controller.signal,
                             body: JSON.stringify({
                                 amount: amount,
                                 walletAddress: recipientField ? recipientField.value.trim() : '',
                                 network: 'TRC20'
-                            })
-                        })
-                        .then(response => {
+                            })                        }).then(response => {
+                            // Always clear the timeout as soon as we get a response
+                            clearTimeout(timeoutId);
+                            
                             if (response.status === 401) {
-                                window.location.href = '/auth.html'; // Redirect to login if unauthorized
-                                throw new Error('Unauthorized');
+                                // NEVER auto redirect - just show an error
+                                throw new Error('Unauthorized - Please login again');
                             }
                             return response.json();
                         })
@@ -1220,11 +1227,9 @@ function generateWithdrawalPage(availableBalance) {
                             if (!data.success) {
                                 throw new Error(data.message || 'Withdrawal request failed');
                             }
-                            
-                            if (submitButton) {
+                              if (submitButton) {
                                 submitButton.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Request Submitted!';
-                                submitButton.className = submitButton.className.replace('bg-red', 'bg-green');
-                                // submitButton.disabled = true; // Remains disabled after success
+                                submitButton.className = 'submit-button bg-green-500';
                             }
                             
                             if (feedbackMessage) {
@@ -1236,14 +1241,23 @@ function generateWithdrawalPage(availableBalance) {
                             
                             if (recipientField) recipientField.disabled = true;
                             if (amountField) amountField.disabled = true;
-                            
-                            // Update back button text, but its click listener is already set up
-                            if (backButton) {
-                                backButton.innerHTML = '<i class="fas fa-arrow-left mr-1"></i> Return to Wallet';
+                              // No automatic redirect - let user click the back button manually
+                            // Display a success message in the first step content
+                            const firstStepContent = document.querySelector('.step:first-child .step-content');
+                            if (firstStepContent) {
+                                firstStepContent.innerHTML = 
+                                    '<p class="text-green-600 font-bold">' +
+                                    '<i class="fas fa-check-circle mr-2"></i>' + 
+                                    'Withdrawal request submitted successfully! Your transaction is being processed.' +
+                                    '</p>' +
+                                    '<p class="text-gray-600 mt-2">' +
+                                    'Click "Back to Wallet" when you\'re ready to return to your wallet page.' +
+                                    '</p>';
                             }
-                            // NO AUTOMATIC REDIRECT TO wallet.html HERE
-                        })
-                        .catch(error => {
+                        })                        .catch(error => {
+                            // Clear timeout if there's an error too
+                            clearTimeout(timeoutId);
+                            
                             console.error('Withdrawal error:', error);
                             if (feedbackMessage) {
                                 feedbackMessage.style.backgroundColor = '#ef4444';

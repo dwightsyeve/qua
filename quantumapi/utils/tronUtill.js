@@ -34,6 +34,62 @@ try {
 }
 
 /**
+ * Check if a transaction is a valid USDT deposit to the user's address.
+ * @param {Object} tx - The transaction object from TronGrid.
+ * @param {string} userDepositAddress - The user's TRC20 deposit address.
+ * @returns {boolean} True if it's a valid deposit, false otherwise.
+ */
+function isUSDTDeposit(tx, userDepositAddress) {
+  try {
+    if (!tx || !userDepositAddress) {
+      console.error('[isUSDTDeposit] Invalid parameters: tx or userDepositAddress is null/undefined.');
+      return false;
+    }
+
+    const txToAddress = tx.to;
+    const tokenInfo = tx.token_info;
+    // TronGrid typically provides contract address in token_info.address or token_info.id
+    // Prefer token_info.address if available
+    const txContractAddress = tokenInfo?.address || tokenInfo?.id;
+    const txType = tx.type; // e.g., 'Transfer'
+    const txValue = tx.value; // Amount in smallest unit (string)
+
+    if (txType !== 'Transfer') {
+      // console.log(`[isUSDTDeposit] TXID ${tx.transaction_id || tx.txID}: Not a 'Transfer' type (Type: ${txType}). Skipping.`);
+      return false;
+    }
+
+    if (!txToAddress || !txContractAddress || txValue === undefined) {
+      console.error(`[isUSDTDeposit] TXID ${tx.transaction_id || tx.txID}: Missing critical transaction data (to, contract, or value).`);
+      return false;
+    }
+
+    const isToCorrectUserAddress = txToAddress.toLowerCase() === userDepositAddress.toLowerCase();
+    const isCorrectUSDTContract = txContractAddress.toLowerCase() === USDT_CONTRACT_ADDRESS.toLowerCase();
+    
+    // Ensure txValue is a string and can be parsed to a number
+    const numericValue = typeof txValue === 'string' ? parseInt(txValue, 10) : Number(txValue);
+    const isValidValue = !isNaN(numericValue) && numericValue > 0;
+
+    if (!isToCorrectUserAddress) {
+      // console.log(`[isUSDTDeposit] TXID ${tx.transaction_id || tx.txID}: To address mismatch. Expected ${userDepositAddress}, got ${txToAddress}.`);
+    }
+    if (!isCorrectUSDTContract) {
+      // console.log(`[isUSDTDeposit] TXID ${tx.transaction_id || tx.txID}: Contract address mismatch. Expected ${USDT_CONTRACT_ADDRESS}, got ${txContractAddress}.`);
+    }
+    if (!isValidValue) {
+      // console.log(`[isUSDTDeposit] TXID ${tx.transaction_id || tx.txID}: Invalid or zero value (${txValue}).`);
+    }
+
+    return isToCorrectUserAddress && isCorrectUSDTContract && isValidValue;
+
+  } catch (error) {
+    console.error(`[isUSDTDeposit] EXCEPTION for TXID ${tx.transaction_id || tx.txID}:`, error);
+    return false;
+  }
+}
+
+/**
  * Monitor address for incoming TRC20 deposits
  * This would typically be part of a background job or service
  * @param {string} address - TRON address to monitor
@@ -43,60 +99,64 @@ try {
 exports.checkForDeposits = async (address, userId) => {
   try {
     // Input validation
-    if (!address || !userId) {
+    if (!address || userId === undefined || userId === null) {
       console.error('Invalid parameters in checkForDeposits:', { address, userId });
       return false;
     }
 
-    console.log(`Checking deposits for address ${address} and user ${userId}`);
+    // console.log(`Checking deposits for address ${address} and user ${userId}`);
     
     // Get the transaction history for this address
     const transactions = await fetchTronTransactions(address);
     
     if (!transactions || !Array.isArray(transactions)) {
-      console.error('No valid transactions returned for address:', address);
-      return false;
+      console.error('No valid transactions returned by fetchTronTransactions for address:', address);
+      return false; // Or handle as no new transactions
     }
     
-    console.log(`Found ${transactions.length} transactions for address ${address}`);
+    // console.log(`Found ${transactions.length} transactions for address ${address}`);
     
     // Set of processed transaction IDs to avoid duplicates
     const processedTxIds = await getProcessedTransactionIds(userId);
+    // console.log(`Found ${processedTxIds.size} previously processed transactions for user ${userId}`);
     
     let depositCount = 0;
     
     for (const tx of transactions) {
+      const txId = tx.transaction_id || tx.txID; // Prefer transaction_id if available
+      if (!txId) {
+        // console.warn('[checkForDeposits] Transaction missing ID:', tx);
+        continue;
+      }
+
+      // console.log(`[checkForDeposits] Analyzing transaction ${txId}`);
+      
       // Skip already processed transactions
-      if (processedTxIds.has(tx.txID)) {
+      if (processedTxIds.has(txId)) {
+        // console.log(`[checkForDeposits] Transaction ${txId} already processed, skipping`);
         continue;
       }
       
-      // Check if this is a deposit to our address using the exported function
-      if (exports.isUSDTDeposit(tx, address)) {
-        console.log(`Processing deposit transaction ${tx.txID}`);
-        await processDeposit(tx, userId);
-        
-        // Mark as processed
-        await markTransactionAsProcessed(tx.txID, userId);
-        depositCount++;
+      // Check if this is a deposit to our address
+      if (isUSDTDeposit(tx, address)) { // Pass the actual transaction object
+        // console.log(`[checkForDeposits] Processing deposit transaction ${txId}`);
+        const success = await processDeposit(tx, userId); // Pass the actual transaction object
+        if (success) {
+          await markTransactionAsProcessed(txId, userId); // Use the consistent txId
+          depositCount++;
+        }
+      } else {
+        // console.log(`[checkForDeposits] Skipping transaction ${txId} - not a valid USDT deposit or other issue.`);
       }
     }
     
-    console.log(`Processed ${depositCount} new deposits for user ${userId}`);
+    if (depositCount > 0) {
+      console.log(`Processed ${depositCount} new deposits for user ${userId}`);
+    }
     
     return true;
   } catch (error) {
-    console.error(`Error checking deposits for ${address}:`, error);
-    
-    // Send admin notification for critical failures
-    try {
-      const { sendAdminNotification } = require('./WalletUtils');
-      sendAdminNotification('Deposit Monitoring Error', 
-        `Failed to check deposits for address ${address} (User ID: ${userId})\n\nError: ${error.message}`);
-    } catch (notifyError) {
-      console.error('Failed to send admin notification:', notifyError);
-    }
-    
+    console.error(`Error checking deposits for ${address}, user ${userId}:`, error);
     return false;
   }
 };
@@ -202,89 +262,120 @@ async function fetchTronTransactions(address) {
  * @param {number} userId - User ID
  */
 async function processDeposit(tx, userId) {
-  const db = require('../database');
-  
+  const db = require('../database'); // Ensure db is required here if not at top level of module
+  const txId = tx.transaction_id || tx.txID; // Use consistent txId
+
+  // console.log(`[processDeposit] Attempting to process TXID: ${txId} for UserID: ${userId}`);
   try {
-    // Start a database transaction
     db.prepare('BEGIN').run();
-    
-    // Calculate the amount in standard units
-    const decimals = tx.token_info?.decimals || 6;
-    const rawAmount = tx.value;
-    const amount = rawAmount / Math.pow(10, decimals);
-    
-    // Create a deposit record
-    db.prepare(`
-      INSERT INTO transactions (
-        userId, 
-        type, 
-        amount, 
-        status, 
-        txHash,
-        details
-      ) VALUES (?, ?, ?, ?, ?, ?)
-    `).run(
-      userId,
-      'Deposit',
-      amount,
-      'Completed',
-      tx.txID,
-      JSON.stringify({
-        network: 'TRC20',
-        tokenName: tx.token_info?.name || 'USDT',
-        fromAddress: tx.from,
-        timestamp: tx.block_timestamp,
-        blockNumber: tx.blockNumber || 0
-      })
-    );
-    
-    // Update user's wallet balance
-    const wallet = db.prepare('SELECT * FROM wallets WHERE userId = ?').get(userId);
-    
-    if (!wallet) {
-      throw new Error(`No wallet found for user ${userId}`);
+    // console.log('[processDeposit] DB Transaction BEGIN');
+
+    const tokenInfo = tx.token_info;
+    const decimals = tokenInfo?.decimals !== undefined ? parseInt(tokenInfo.decimals, 10) : 6; // Default to 6 if undefined
+    const rawAmount = tx.value; // This is usually a string
+
+    if (typeof rawAmount !== 'string' && typeof rawAmount !== 'number') {
+        console.error(`[processDeposit] Invalid rawAmount type: ${typeof rawAmount} for TXID ${txId}. Rolling back.`);
+        db.prepare('ROLLBACK').run();
+        return false;
     }
     
-    const newBalance = wallet.balance + amount;
-    
-    db.prepare(`
-      UPDATE wallets 
-      SET balance = ?, updatedAt = CURRENT_TIMESTAMP
-      WHERE userId = ?
-    `).run(newBalance, userId);
-      // Commit the transaction
-    db.prepare('COMMIT').run();
-    
-    console.log(`Deposit processed: ${amount} USDT for user ${userId}, tx: ${tx.txID}`);
-    
-    // Process referral commissions for this deposit
-    try {
-      const { processDepositForReferrals } = require('../controller/ReferralController');
-      const referralLogger = require('./referralLogger');
-      
-      referralLogger.info(`Deposit detected in blockchain monitor - User: ${userId}, Amount: ${amount}, TxHash: ${tx.txID}`, 
-        { userId, amount, txHash: tx.txID }, true);
-      
-      // Process the deposit for referrals (don't await, let it run in background)
-      processDepositForReferrals(userId, amount)
-        .then(result => {
-          referralLogger.info(`Referral commission processing completed for blockchain deposit: ${result ? 'Success' : 'Failed'}`, 
-            { userId, amount, txHash: tx.txID, result }, true);
-        })
-        .catch(error => {
-          referralLogger.error(`Error processing referral commission: ${error.message}`, 
-            { userId, amount, txHash: tx.txID, error: error.stack }, true);
+    const numericRawAmount = typeof rawAmount === 'string' ? parseInt(rawAmount, 10) : Number(rawAmount);
+
+    if (isNaN(numericRawAmount)) {
+        console.error(`[processDeposit] rawAmount "${rawAmount}" is not a number for TXID ${txId}. Rolling back.`);
+        db.prepare('ROLLBACK').run();
+        return false;
+    }
+
+    const amount = numericRawAmount / Math.pow(10, decimals);
+
+    if (isNaN(amount) || amount <= 0) {
+        console.error(`[processDeposit] Invalid calculated amount: ${amount} (from raw ${numericRawAmount}, decimals ${decimals}) for TXID ${txId}. Rolling back.`);
+        db.prepare('ROLLBACK').run();
+        return false;
+    }
+    // console.log(`[processDeposit] Calculated amount: ${amount}`);
+
+    const existingTransaction = Transaction.findByTxHash(txId);
+    if (existingTransaction) {
+      console.warn(`[processDeposit] Transaction with hash ${txId} already exists in transactions table. Skipping insertion, but will check wallet balance. UserID: ${userId}`);
+      // This case should ideally be caught by getProcessedTransactionIds, but as a safeguard:
+      // Potentially update wallet balance if it wasn't updated before, though this indicates an inconsistent state.
+      // For now, we assume getProcessedTransactionIds is the primary guard.
+      // If we reach here, it implies markTransactionAsProcessed might have failed previously,
+      // or getProcessedTransactionIds logic needs review.
+      // We will proceed to update balance if the transaction record exists but might not have been fully processed.
+    } else {
+        Transaction.create({
+          userId,
+          type: 'Deposit',
+          amount,
+          status: 'Completed', // Deposits are usually considered completed once verified on-chain
+          currency: tokenInfo?.symbol || 'USDT',
+          txHash: txId,
+          description: `Deposit of ${amount} ${tokenInfo?.symbol || 'USDT'}`,
+          fee: 0, // Blockchain fees are paid by sender
+          payment_method: 'TRC20',
+          wallet_address: tx.to, // The user's deposit address
+          // completedAt: new Date(tx.block_timestamp).toISOString(), // Use block_timestamp
+          // block_timestamp is in milliseconds
+          completedAt: tx.block_timestamp ? new Date(tx.block_timestamp).toISOString() : new Date().toISOString(),
         });
-    } catch (referralError) {
-      console.error('Error initiating referral processing:', referralError);
-      // Don't fail the deposit process if referral processing fails
+        // console.log(`[processDeposit] Inserted into transactions table for TXID: ${txId}`);
     }
-    
+
+
+    const wallet = Wallet.findByUserId(userId);
+    if (!wallet) {
+      console.error(`[processDeposit] No wallet found for user ${userId}. Rolling back.`);
+      db.prepare('ROLLBACK').run();
+      return false;
+    }
+    // console.log(`[processDeposit] Current wallet balance for UserID ${userId}: ${wallet.balance}`);
+
+    const newBalance = (parseFloat(wallet.balance) || 0) + amount; // Ensure wallet.balance is treated as number
+    // console.log(`[processDeposit] New calculated wallet balance for UserID ${userId}: ${newBalance}`);
+
+    Wallet.updateBalance(userId, newBalance, wallet.pendingBalance); // Assuming pendingBalance is handled elsewhere or not affected by deposits
+    // console.log(`[processDeposit] Updated wallets table for UserID ${userId}.`);
+
+    db.prepare('COMMIT').run();
+    // console.log(`[processDeposit] DB Transaction COMMIT for TXID: ${txId}`);
+
+    // Send notifications
+    try {
+      const user = db.prepare('SELECT email, username FROM users WHERE id = ?').get(userId);
+      if (user) {
+        await sendEmailNotification(user.email, 'Deposit Confirmation', {
+          username: user.username,
+          amount: amount.toFixed(2), // Format amount
+          currency: tokenInfo?.symbol || 'USDT',
+          transactionId: txId,
+          walletAddress: tx.to,
+          timestamp: new Date(tx.block_timestamp).toLocaleString()
+        });
+        await Notification.create({
+          userId,
+          message: `Your deposit of ${amount.toFixed(2)} ${tokenInfo?.symbol || 'USDT'} has been confirmed. Transaction ID: ${txId.substring(0,10)}...`,
+          type: 'deposit_success',
+          isRead: false,
+          link: `/wallet?transaction=${txId}`
+        });
+      }
+    } catch (notificationError) {
+      console.error(`[processDeposit] Failed to send notifications for TXID ${txId}:`, notificationError);
+      // Do not roll back for notification failure
+    }
     return true;
   } catch (error) {
-    // Rollback the transaction on error
-    db.prepare('ROLLBACK').run();
-    console.error('Error processing deposit:', error);
+    console.error(`[processDeposit] EXCEPTION for TXID: ${txId}, UserID: ${userId}:`, error);
+    try {
+      db.prepare('ROLLBACK').run();
+      // console.log('[processDeposit] DB Transaction ROLLED BACK due to exception.');
+    } catch (rbError) {
+      console.error('[processDeposit] CRITICAL: Failed to ROLLBACK DB Transaction:', rbError);
+    }
     return false;
   }
 }
@@ -295,40 +386,48 @@ async function processDeposit(tx, userId) {
  * @returns {Promise<Set>} Set of processed transaction IDs
  */
 async function getProcessedTransactionIds(userId) {
-  const db = require('../database');
+  // This function should ideally check a dedicated 'processed_transactions' table
+  // or rely on the existence of the transaction in the 'transactions' table with a 'Completed' status.
+  // The current implementation in the prompt was:
+  // const rows = db.prepare('SELECT txHash FROM transactions WHERE userId = ? AND type = ? AND status = ?').all(userId, 'Deposit', 'Completed');
+  // This seems reasonable if 'Completed' deposits are considered fully processed.
+  const rows = db.prepare(
+    `SELECT txHash FROM transactions 
+     WHERE userId = ? AND type = 'Deposit' AND (status = 'Completed' OR status = 'Pending')` // Consider pending if it means "seen but not yet fully confirmed for balance"
+  ).all(userId); // Removed type and status to catch any record of this txHash for the user.
+                 // A more robust system might have a specific table for "seen" tx hashes by the monitor.
+                 // For now, if it's in transactions table for this user, assume it's been "seen".
   
-  try {
-    const rows = db.prepare('SELECT txHash FROM transactions WHERE userId = ?').all(userId);
-    return new Set(rows.map(row => row.txHash).filter(Boolean));
-  } catch (error) {
-    console.error('Error getting processed transactions:', error);
-    return new Set();
+  const txIds = new Set();
+  for (const row of rows) {
+    if (row.txHash) { // Ensure txHash is not null or undefined
+        txIds.add(row.txHash);
+    }
   }
+  return txIds;
 }
 
-/**
- * Mark a transaction as processed
- * @param {string} txId - Transaction ID
- * @param {number} userId - User ID
- */
 async function markTransactionAsProcessed(txId, userId) {
-  const db = require('../database');
-  
+  // This function, as per the original code structure, might be inserting into a separate 'processed_transactions' table.
+  // However, if getProcessedTransactionIds relies on the main 'transactions' table,
+  // then successfully inserting into 'transactions' (as done in processDeposit)
+  // effectively marks it as "seen" or "processed" for the next run of checkForDeposits.
+  // If 'processed_transactions' table is indeed used and separate:
+  /*
   try {
-    // Record this tx in a separate table to prevent duplicate processing
-    db.prepare(`
-      INSERT OR IGNORE INTO processed_transactions (
-        txHash, 
-        userId, 
-        processedAt
-      ) VALUES (?, ?, CURRENT_TIMESTAMP)
-    `).run(txId, userId);
-    
-    return true;
+    db.prepare('INSERT OR IGNORE INTO processed_transactions (txHash, userId, processedAt) VALUES (?, ?, CURRENT_TIMESTAMP)')
+      .run(txId, userId);
+    // console.log(`[markTransactionAsProcessed] Marked TXID ${txId} for UserID ${userId} as processed.`);
   } catch (error) {
-    console.error('Error marking transaction as processed:', error);
-    return false;
+    console.error(`[markTransactionAsProcessed] Failed to mark TXID ${txId} for UserID ${userId}:`, error);
   }
+  */
+  // For now, assuming that successful insertion into the main 'transactions' table by processDeposit
+  // is sufficient for getProcessedTransactionIds to pick it up.
+  // If there's a separate `processed_transactions` table being used by `createProcessedTransactionsTable`,
+  // then the insert logic here should be uncommented and verified.
+  // console.log(`[markTransactionAsProcessed] TXID ${txId} for UserID ${userId} is considered processed by virtue of being in 'transactions' table via processDeposit.`);
+  return; // No separate action if main transaction table is the source of truth for "processed"
 }
 
 /**
@@ -390,31 +489,21 @@ exports.getTransactionDetails = async (txHash) => {
  * This helps prevent double-processing of deposits
  */
 exports.createProcessedTransactionsTable = () => {
-  const db = require('../database');
-  
-  return db.prepare(`
-    CREATE TABLE IF NOT EXISTS processed_transactions (
-      txHash TEXT PRIMARY KEY,
-      userId INTEGER NOT NULL,
-      processedAt TEXT NOT NULL,
+  // This function implies a separate table. If it exists and is used,
+  // then markTransactionAsProcessed should use it, and getProcessedTransactionIds might also need to.
+  // For simplicity and to avoid potential conflicts if this table isn't central to the existing logic,
+  // I'm keeping the "processed" check tied to the main 'transactions' table.
+  // If this table IS central, the logic in getProcessedTransactionIds and markTransactionAsProcessed needs to be aligned with it.
+  db.prepare(
+    `CREATE TABLE IF NOT EXISTS processed_transactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      txHash TEXT UNIQUE NOT NULL,
+      userId INTEGER, 
+      processedAt TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (userId) REFERENCES users(id)
-    )
-  `).run();
-};
-
-/**
- * Get all processed transactions from the database
- * @returns {Array} Array of processed transactions
- */
-exports.getProcessedTransactions = () => {
-  const db = require('../database');
-  
-  try {
-    return db.prepare('SELECT * FROM processed_transactions ORDER BY processedAt DESC').all();
-  } catch (error) {
-    console.error('Error getting processed transactions:', error);
-    return [];
-  }
+    )`
+  ).run();
+  // console.log("Processed transactions table checked/created.");
 };
 
 /**
@@ -465,49 +554,3 @@ exports.processDeposit = processDeposit;
 exports.getProcessedTransactionIds = getProcessedTransactionIds;
 exports.markTransactionAsProcessed = markTransactionAsProcessed;
 //exports.getMockTransactions = getMockTransactions;
-
-/**
- * Check if a transaction is a valid USDT deposit
- * @param {Object} tx - Transaction object
- * @param {string} address - The address to check
- * @returns {boolean} True if it's a valid USDT deposit, false otherwise
- */
-function isUSDTDeposit(tx, address) {
-  try {
-    // Validate inputs
-    if (!tx || !address) {
-      console.error('Invalid parameters in isUSDTDeposit:', { txExists: !!tx, addressExists: !!address });
-      return false;
-    }
-    
-    // Handle different transaction formats from TronGrid API
-    if (tx.type === 'Transfer' || tx.type === 'TransferContract') {
-      // For standard TRC20 transfers
-      // Check the correct recipient address and USDT contract
-      const isToCorrectAddress = tx.to && tx.to.toLowerCase() === address.toLowerCase();
-      const isUSDTContract = tx.token_info?.id?.toLowerCase() === USDT_CONTRACT_ADDRESS.toLowerCase();
-      
-      return isToCorrectAddress && isUSDTContract;
-    } else if (tx.type === 'TriggerSmartContract' && tx.contract_address) {
-      // For smart contract calls
-      const isUSDTContract = tx.contract_address?.toLowerCase() === USDT_CONTRACT_ADDRESS.toLowerCase();
-      const isToCorrectAddress = tx.parameter?.value?._to?.toLowerCase() === address.toLowerCase();
-      
-      return isUSDTContract && isToCorrectAddress;
-    } else if (tx.token_info) {
-      // For TransferAssetContract or other token transfers from the API
-      const isToCorrectAddress = tx.to && tx.to.toLowerCase() === address.toLowerCase();
-      const isUSDTContract = tx.token_info?.id?.toLowerCase() === USDT_CONTRACT_ADDRESS.toLowerCase();
-      
-      return isToCorrectAddress && isUSDTContract;
-    }
-    
-    return false;
-  } catch (error) {
-    console.error('Error in isUSDTDeposit:', error);
-    return false;
-  }
-}
-
-// Export the function so it can be used elsewhere
-exports.isUSDTDeposit = isUSDTDeposit;

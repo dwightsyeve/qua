@@ -38,8 +38,21 @@ document.addEventListener('DOMContentLoaded', () => {
     initEventListeners();
     toggleBalanceVisibilitySetup();
 
-    // Initial data load (start with overview tab)
-    switchTab('overview-tab');
+    // Check for withdrawal success URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('withdrawalSuccess')) {
+        showSuccessNotification('Withdrawal request submitted successfully!');
+        
+        // Remove the parameter from URL to prevent showing the message on page refresh
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        
+        // Switch to history tab to show the pending transaction
+        switchTab('history-tab');
+    } else {
+        // Initial data load (start with overview tab)
+        switchTab('overview-tab');
+    }
 });
 
 /**
